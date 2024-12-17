@@ -70,4 +70,106 @@ The following section details all the custom events supported by Glood.AI's Web 
     - Personalizing product recommendations or content on a Shopify store
     - Supporting segmentation and analytics within **Glood.AI**
   </Accordion>
+  <Accordion icon="mouse-pointer" title="Section Interaction Events">
+    Events for tracking user interactions with Glood recommendation sections.
+
+    ### Event: `glood:section:click`
+
+    This event is triggered when a user clicks on a product within a Glood recommendation section.
+
+    ### Event Structure
+
+    #### Event Name
+    ```js
+    glood:section:click
+    ```
+
+    #### Payload
+    The payload contains information about the clicked product and section:
+
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `page` | String | The page ID where the click occurred |
+    | `parent.productId` | String \| null | ID of the current product page (if applicable) |
+    | `parent.variantId` | String \| null | ID of the current product variant (if applicable) |
+    | `products[].productId` | String | ID of the clicked product |
+    | `products[].variantId` | String | ID of the clicked product variant |
+    | `section` | String | ID of the Glood recommendation section |
+    | `sectionServeId` | String | Unique serve ID for the section render |
+    | `requestId` | String | Unique request ID from the Glood recommendations API call |
+
+    ### Example Usage
+    ```javascript
+    Shopify.analytics.publish('glood:section:click', {
+      page: "55380",
+      parent: {
+        productId: null,
+        variantId: null
+      },
+      products: [{
+        productId: "4594143232103",
+        variantId: "32389151621223"
+      }],
+      section: "216700",
+      sectionServeId: "98ae55db-8e25-46be-956e-2024d820edb4",
+      requestId: "1734410855-8dd0e6a0-4365-489b-b622-2fedca7129c0"
+    });
+    ```
+
+    ### Event: `glood:section:add_to_cart`
+
+    This event is triggered when a product is added to cart from a Glood recommendation section.
+
+    ### Event Structure
+
+    #### Event Name
+    ```js
+    glood:section:add_to_cart
+    ```
+
+    #### Payload
+    The payload contains information about the added product and section:
+
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `page` | String | The page ID where the add to cart occurred |
+    | `parent.productId` | String \| null | ID of the current product page (if applicable) |
+    | `parent.variantId` | String \| null | ID of the current product variant (if applicable) |
+    | `products[].productId` | String | ID of the product added to cart |
+    | `products[].variantId` | String | ID of the product variant added to cart |
+    | `products[].quantity` | Number | Quantity of the product added to cart |
+    | `section` | String | ID of the Glood recommendation section |
+    | `sectionServeId` | String | Unique serve ID for the section render |
+    | `requestId` | String | Unique request ID from the Glood recommendations API call |
+
+    ### Example Usage
+    ```javascript
+    Shopify.analytics.publish('glood:section:add_to_cart', {
+      page: "55380",
+      parent: {
+        productId: null,
+        variantId: null
+      },
+      products: [{
+        productId: "4594143232103",
+        variantId: "32389151621223",
+        quantity: 1
+      }],
+      section: "216700",
+      sectionServeId: "98ae55db-8e25-46be-956e-2024d820edb4",
+      requestId: "1734410855-8dd0e6a0-4365-489b-b622-2fedca7129c0"
+    });
+    ```
+
+    ### Purpose
+    These events help track user interactions with Glood recommendation sections to:
+    - **Measure Engagement**: Track clicks and conversions from recommendation sections
+    - **Analyze Performance**: Evaluate the effectiveness of different recommendation strategies
+    - **Improve Recommendations**: Use interaction data to enhance recommendation algorithms
+
+    ### Use Cases
+    - Tracking which recommended products users click on
+    - Measuring conversion rates from recommendation sections
+    - Analyzing user behavior patterns with recommended products
+  </Accordion>
 </AccordionGroup>

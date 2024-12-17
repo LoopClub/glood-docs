@@ -19,109 +19,48 @@
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
+    "/api/storefront/headless/recommendations/automatic": {
+      "post": {
+        "description": "Get automatic recommendations powered using LLMs",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
+            "name": "x-shop",
+            "in": "header",
+            "description": "Shopify store URL",
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "example": "shop.myshopify.com"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Request body", 
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/AutomaticRecommendationsRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Recommendations",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/AutomaticRecommendationsResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/AutomaticRecommendationsError"
                 }
               }
             }
@@ -132,41 +71,263 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "AutomaticRecommendationsRequest": {
         "type": "object",
+        "required": [
+          "product_ids",
+          "recommendation_type",
+          "view"
+        ],
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "List of product IDs to get recommendations for"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+          "recommendation_type": {
+            "type": "string",
+            "description": "Type of recommendations to retrieve",
+            "enum": ["similar_products"]
           },
-          {
-            "required": [
-              "id"
-            ],
+          "view": {
+            "type": "string", 
+            "description": "Context where recommendations will be displayed",
+            "enum": ["product_details", "product_ids"]
+          },
+          "pagination": {
             "type": "object",
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
+              "cursor": {
+                "type": "string",
+                "description": "Cursor for pagination"
+              },
+              "limit": {
                 "type": "integer",
-                "format": "int64"
+                "description": "Number of results to return per page",
+                "minimum": 1
               }
             }
           }
-        ]
+        }
+      },
+      "AutomaticRecommendationsResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status of the response",
+            "enum": ["ok"]
+          },
+          "serve_id": {
+            "type": "string",
+            "description": "Unique identifier for this recommendation serve"
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "cursor": {
+                "type": "string",
+                "description": "Cursor for pagination"
+              }
+            }
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": {
+                  "type": "integer",
+                  "description": "Unique identifier of the product"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Title of the product"
+                },
+                "price": {
+                  "type": "number",
+                  "description": "Price of the product"
+                },
+                "tags": {
+                  "type": "string",
+                  "description": "Comma-separated list of product tags"
+                },
+                "product_type": {
+                  "type": "string",
+                  "description": "Type/category of the product"
+                },
+                "vendor": {
+                  "type": "string",
+                  "description": "Vendor/brand of the product"
+                },
+                "image": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier of the image"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL of the product image"
+                    },
+                    "height": {
+                      "type": "integer",
+                      "description": "Height of the image in pixels"
+                    },
+                    "width": {
+                      "type": "integer", 
+                      "description": "Width of the image in pixels"
+                    },
+                    "altText": {
+                      "type": "string",
+                      "description": "Alternative text for the image"
+                    }
+                  }
+                },
+                "handle": {
+                  "type": "string",
+                  "description": "URL handle/slug for the product"
+                },
+                "compare_at_price": {
+                  "type": "number",
+                  "description": "Original/compare at price of the product"
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the option"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the option (e.g. Size, Color)"
+                      },
+                      "values": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Available values for this option"
+                      },
+                      "position": {
+                        "type": "integer",
+                        "description": "Display position of this option"
+                      }
+                    }
+                  }
+                },
+                "variants": {
+                  "type": "array", 
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "variant_id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the variant"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the variant"
+                      },
+                      "display_name": {
+                        "type": "string",
+                        "description": "Display name of the variant"
+                      },
+                      "position": {
+                        "type": "integer",
+                        "description": "Display position of the variant"
+                      },
+                      "sku": {
+                        "type": "string",
+                        "description": "SKU of the variant"
+                      },
+                      "selected_options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "description": "Name of the option"
+                            },
+                            "value": {
+                              "type": "string", 
+                              "description": "Selected value for this option"
+                            }
+                          }
+                        }
+                      },
+                      "price": {
+                        "type": "string",
+                        "description": "Price of the variant"
+                      },
+                      "compare_at_price": {
+                        "type": "string",
+                        "description": "Original/compare at price of the variant"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AutomaticRecommendationsError": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Human readable error message"
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Path to the field that caused the error"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of validation error"
+                },
+                "context": {
+                  "type": "object",
+                  "properties": {
+                    "limit": {
+                      "type": "number",
+                      "description": "Maximum allowed value"
+                    },
+                    "value": {
+                      "type": "number", 
+                      "description": "Actual value provided"
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "Field label"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Field key"
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+        }
       },
       "Error": {
         "required": [
