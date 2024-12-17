@@ -1,0 +1,73 @@
+---
+title: 'Custom Web Pixel Events'
+description: 'Learn about the custom Web Pixel events supported by Glood.AI'
+---
+
+## Overview
+
+Glood.AI's Web Pixel extension includes custom events to provide enhanced personalization and analytics capabilities. This guide covers all the custom Web Pixel events that our platform supports.
+
+### What are Glood.AI Custom Web Pixel Events?
+
+Glood.AI Custom Web Pixel events are specialized user interactions and activities that occur on your Shopify store. These events help track customer behavior specific to Glood.AI's personalization features, enabling:
+
+- Advanced customer preference tracking
+- Enhanced personalization capabilities
+- Detailed analytics and insights
+- Optimized recommendation performance
+
+## Supported Events
+
+The following section details all the custom events supported by Glood.AI's Web Pixel extension.
+
+<AccordionGroup>
+  <Accordion icon="user" title="Customer Preferences">
+    Events for tracking and storing customer preferences for personalization.
+
+    ### Event: `glood:customer_preference`
+
+    This event is triggered to store customer preferences for personalization purposes within the **Glood.AI** platform.
+
+    ### Event Structure
+
+    #### Event Name
+    ```js
+    glood:customer_preference
+    ```
+
+    #### Payload
+    The payload contains a structured object with the following fields:
+
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `preferences` | Array of Objects | An array of key-value pairs representing customer preferences |
+
+    #### Preferences Object
+    Each object in the `preferences` array contains:
+
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `key` | String | The key representing the type of preference (e.g., "tags", "categories") |
+    | `value` | String | A string representing the value associated with the key (e.g., "tag1,tag2") |
+
+    ### Example Usage
+    ```javascript
+    Shopify.analytics.publish('glood:customer_preference', {
+        preferences: [
+            { key: 'tags', value: "tag1,tag2" }
+        ]
+    });
+    ```
+
+    ### Purpose
+    The primary purpose of this event is to store customer preferences in **Glood.AI** for:
+    - **Personalization**: Enhance customer experiences with tailored content and recommendations
+    - **Behavior Analysis**: Understand customer behavior through preference analysis  
+    - **Targeted Campaigns**: Create specific campaigns based on customer preferences
+
+    ### Use Cases
+    - Storing customer-selected tags, categories, or other preferences
+    - Personalizing product recommendations or content on a Shopify store
+    - Supporting segmentation and analytics within **Glood.AI**
+  </Accordion>
+</AccordionGroup>
