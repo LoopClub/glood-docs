@@ -19,7 +19,7 @@
     }
   ],
   "paths": {
-    "/api/storefront/headless/recommendations/automatic": {
+    "/api/storefront/v3/headless/recommendations/automatic": {
       "post": {
         "description": "Get automatic recommendations powered using LLMs",
         "parameters": [
