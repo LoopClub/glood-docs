@@ -433,7 +433,7 @@
                 "creation_type": {
                   "type": "string",
                   "description": "Type of recommendation creation method",
-                  "enum": ["manual", "rules", "llm", "ai"]
+                  "enum": ["manual", "automatic"]
                 },
                 "view": {
                   "type": "string",
