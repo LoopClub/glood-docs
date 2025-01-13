@@ -67,6 +67,55 @@
           }
         }
       }
+    },
+    "/api/storefront/v3/headless/recommendations": {
+      "post": {
+        "description": "Get AI recommendations including Manual, Rules, LLM & AI using Query",
+        "parameters": [
+          {
+            "name": "x-shop",
+            "in": "header",
+            "description": "Shopify store URL",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "shop.myshopify.com"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Request body", 
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeadlessQueryRecommendationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recommendations with Product Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeadlessQueryRecommendationsProductDetailsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeadlessQueryRecommendationsError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -105,8 +154,9 @@
               },
               "limit": {
                 "type": "integer",
-                "description": "Number of results to return per page",
-                "minimum": 1
+                "description": "Number of results to return per page. Minimum is 1 and maximum is 50",
+                "minimum": 1,
+                "maximum": 50
               }
             }
           }
@@ -280,6 +330,147 @@
         }
       },
       "AutomaticRecommendationsError": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Human readable error message"
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Path to the field that caused the error"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of validation error"
+                },
+                "context": {
+                  "type": "object",
+                  "properties": {
+                    "limit": {
+                      "type": "number",
+                      "description": "Maximum allowed value"
+                    },
+                    "value": {
+                      "type": "number", 
+                      "description": "Actual value provided"
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "Field label"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Field key"
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+        }
+      },
+      "HeadlessQueryRecommendationsRequest": {
+        "type": "object",
+        "required": [
+          "queries"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Client identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User identifier" 
+          },
+          "customer_id": {
+            "type": "string",
+            "description": "Customer identifier"
+          },
+          "queries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "recommendation_type", 
+                "product_ids",
+                "view"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique identifier for the query"
+                },
+                "recommendation_type": {
+                  "type": "string",
+                  "description": "Type of recommendations to retrieve",
+                  "enum": ["bought_together"]
+                },
+                "max_recommendations": {
+                  "type": "integer",
+                  "description": "Maximum number of recommendations to return. Minimum is 1 and maximum is 50",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "product_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "description": "List of product IDs to get recommendations for"
+                },
+                "creation_type": {
+                  "type": "string",
+                  "description": "Type of recommendation creation method",
+                  "enum": ["manual", "rules", "llm", "ai"]
+                },
+                "view": {
+                  "type": "string",
+                  "description": "Format of the recommendations response",
+                  "enum": ["product_details", "product_ids"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "HeadlessQueryRecommendationsProductDetailsResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "serve_id",
+          "data"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok"]
+          },
+          "serve_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this recommendation serve request"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "HeadlessQueryRecommendationsError": {
         "type": "object",
         "properties": {
           "errors": {
