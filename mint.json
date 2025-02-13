@@ -1,23 +1,19 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Glood.AI: Personalized Recommendations, Upsell & Bundles",
+  "name": "Glood.AI Documentation",
   "logo": {
-    "dark": "/logo/glood-dark.svg",
-    "light": "/logo/glood-light.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "colors": {
-    "primary": "#153A4A",
-    "light": "#FF9F8A",
-    "dark": "#153A4A",
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
     "anchors": {
       "from": "#0D9373",
       "to": "#07C983"
     }
-  },
-  "modeToggle": {
-    "isHidden": false,
-    "default": "light"
   },
   "topbarLinks": [
     {
@@ -26,96 +22,43 @@
     }
   ],
   "topbarCtaButton": {
-    "name": "Install for Free",
-    "url": "https://apps.shopify.com/recommendation-kit"
+    "name": "Dashboard",
+    "url": "https://dashboard.glood.ai"
   },
-  "tabs": [
-    {
-      "name": "Guides",
-      "url": "guides"
-    },
-    {
-      "name": "How It Works",
-      "url": "how-it-works"
-    },
-    {
-      "name": "For Developers",
-      "url": "for-developers"
-    },
-    {
-      "name": "API Reference",
-      "url": "api-reference"
-    }
-  ],
   "anchors": [
     {
-      "name": "Home",
-      "icon": "house",
-      "url": "https://glood.ai"
+      "name": "API Reference",
+      "icon": "rectangle-terminal",
+      "url": "api-reference"
     },
     {
-      "name": "Install for Free",
-      "icon": "play",
-      "url": "https://apps.shopify.com/recommendation-kit"
+      "name": "Changelog",
+      "icon": "list",
+      "url": "changelog"
     }
   ],
   "navigation": [
     {
-      "group": "Documentation",
+      "group": "Getting Started",
       "pages": [
         "introduction",
+        "quickstart",
         "development"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "guides/introduction",
-        "guides/create-first-personalized-recommendations-section",
-        "guides/glood-custom-web-pixel-events"
-      ]
-    },
-    {
-      "group": "How It Works",
-      "pages": [
-        "how-it-works/introduction",
-        {
-          "group": "Recommendations",
-          "pages": [
-            "how-it-works/recommendations/introduction",
-            "how-it-works/recommendations/bought-together",
-            "how-it-works/recommendations/similar-products"
-          ]
-        },
-        {
-          "group": "Bundles",
-          "pages": [
-            "how-it-works/bundles/introduction"
-          ]
-        }
       ]
     },
     {
       "group": "For Developers",
       "pages": [
-        "for-developers/introduction"
-      ]
-    },
-    {
-      "group": "Get Started",
-      "pages": [
-        "get-started/introduction",
-        "get-started/activate-glood-store"
-      ]
-    },
-    {
-      "group": "Features",
-      "pages": [
-        "features/ai-personalized-recommendations",
-        "features/ai-upsell-bundles",
-        "features/checkout-upsell",
-        "features/ai-search-merchandising",
-        "features/discounts"
+        "for-developers/section-template/introduction",
+        {
+          "group": "Template",
+          "pages": [
+            "for-developers/section-template/code",
+            "for-developers/section-template/filters", 
+            "for-developers/section-template/tags",
+            "for-developers/section-template/hooks"
+          ]
+        }
       ]
     },
     {
@@ -123,23 +66,11 @@
       "pages": [
         "api-reference/introduction"
       ]
-    },
-    {
-      "group": "Endpoint Examples",
-      "pages": [
-        "api-reference/endpoint/automatic-recommendations",
-        "api-reference/endpoint/headless-recommendations"
-      ]
     }
   ],
-  "feedback": {
-    "thumbsRating": true
-  },
-  "integrations":{
-    "intercom": "s2m1k3bl"
-  },
   "footerSocials": {
-    "x": "https://x.com/glood_ai",
-    "linkedin": "https://www.linkedin.com/company/glood-ai"
+    "twitter": "https://twitter.com/gloodai",
+    "github": "https://github.com/gloodai",
+    "linkedin": "https://www.linkedin.com/company/gloodai"
   }
 }

@@ -1,0 +1,163 @@
+---
+title: 'Introduction'
+description: 'Learn about section templates in Glood.AI'
+---
+
+# Section Templates
+
+Section templates in Glood.AI are the building blocks for displaying product recommendations in your Shopify store. They function similarly to Shopify themes, allowing you to create custom layouts and designs for your product recommendations.
+
+## What are Section Templates?
+
+Section templates are modular components that determine how your product recommendations are displayed. They are:
+
+1. **Similar to Shopify Themes**: They follow the same principles as Shopify themes, using Liquid templating for dynamic content rendering.
+
+2. **JavaScript-Powered**: Templates are loaded dynamically using JavaScript through the Glood.AI app embed, which handles recommendation fetching and rendering.
+
+3. **Headless Compatible**: While templates are primarily for traditional Shopify stores, headless stores and Hydrogen apps can use our headless APIs instead.
+
+4. **Multi-Component Structure**: Each template consists of:
+   - Liquid templates for markup
+   - JavaScript for interactivity
+   - CSS for styling
+   - Settings schema for customization
+   - Translation strings for internationalization
+
+5. **Flexible Rendering**: Templates can be rendered either on the frontend or backend, depending on your needs and configuration.
+
+6. **Extensible**: We provide built-in Tags, Filters, and JavaScript Hooks for easy customization and third-party app integration.
+
+## Template Components
+
+A basic section template includes these core components:
+
+```liquid
+{% schema %}
+{
+  "name": "Product Recommendations",
+  "settings": [
+    // Template settings
+  ],
+  "translations": {
+    // Translation strings
+  }
+}
+{% endschema %}
+
+<div class="glood-section" data-section-id="{{ section.id }}">
+  {%- comment -%} Template markup {%- endcomment -%}
+</div>
+
+{% stylesheet %}
+  /* Template styles */
+{% endstylesheet %}
+
+{% javascript %}
+  // Template JavaScript
+{% javascript %}
+```
+
+## Template Features
+
+### 1. Settings Schema
+- Configurable options for layout, styling, and behavior
+- Support for various input types (text, select, color, etc.)
+- Section-specific configurations
+
+### 2. Translations
+- Multi-language support
+- Customizable text strings
+- Fallback handling for missing translations
+
+### 3. Liquid Markup
+- Dynamic content rendering
+- Built-in filters for data manipulation
+- Conditional rendering and loops
+
+### 4. JavaScript
+- Event handling
+- DOM manipulation
+- API integrations
+- Cart operations
+
+### 5. CSS
+- Responsive layouts
+- Custom styling
+- Animation support
+- Theme compatibility
+
+## Extension Points
+
+We provide several ways to extend and customize templates:
+
+1. **Tags**: Custom Liquid tags for template functionality
+   ```liquid
+   {% product_review_app_integration product_id: product.id %}
+   ```
+
+2. **Filters**: Data manipulation filters
+   ```liquid
+   {{ product.price | money: money_format: shop.money_format }}
+   ```
+
+3. **Hooks**: JavaScript hooks for lifecycle events
+   ```javascript
+   initSection: (args, cb, utils) => {
+     // Initialization logic
+   }
+   ```
+
+## Template Loading
+
+Templates are loaded through our JavaScript embed:
+
+```html
+<div id="glood-section-12345" data-section-type="recommendations">
+  <!-- Template will be loaded here -->
+</div>
+
+<script>
+  window.GloodAI.loadSection({
+    container: '#glood-section-12345',
+    template: 'horizontal_grid'
+  });
+</script>
+```
+
+## Best Practices
+
+1. **Performance**
+   - Optimize images and assets
+   - Minimize JavaScript execution time
+   - Use efficient selectors
+   - Implement lazy loading
+
+2. **Compatibility**
+   - Test across different themes
+   - Ensure mobile responsiveness
+   - Handle edge cases gracefully
+   - Support various browser versions
+
+3. **Maintainability**
+   - Follow naming conventions
+   - Document custom functionality
+   - Use modular code structure
+   - Implement error handling
+
+4. **Accessibility**
+   - Use semantic HTML
+   - Add ARIA attributes
+   - Ensure keyboard navigation
+   - Provide alt text for images
+
+## Next Steps
+
+- Learn about [Filters](filters) for data manipulation
+- Explore [Tags](tags) for template functionality
+- Understand [Hooks](hooks) for JavaScript integration
+- Check out [Template Structure](template-structure) for detailed component information
+
+## Support
+
+If you need help with creating or customizing section templates, contact our support team at support@glood.ai 

@@ -1,0 +1,194 @@
+---
+title: 'Filters'
+description: 'Learn about available filters for customizing product recommendations'
+---
+
+# Section Template Filters
+
+Filters in Glood.AI section templates allow you to customize how product data is displayed and manipulated within your templates.
+
+## Available Filters
+
+### URL and Navigation Filters
+
+#### tracking_url
+Builds a product URL with tracking parameters.
+
+**Parameters:**
+- `section` (Object): Section configuration
+- `ref_product_id` (String, optional): Reference product ID for tracking
+
+**Example:**
+```liquid
+{{ '' | tracking_url: section, ref_product_id: product.id }}
+```
+
+### Discount Filters
+
+#### section_discount
+Returns formatted section-level discount text.
+
+**Parameters:**
+- `money_format` (String): Shop's money format
+- `locale` (String): Current locale for translations
+
+**Example:**
+```liquid
+{{ section | section_discount: money_format: shop.money_format, locale: current_locale }}
+```
+
+#### discount_text
+Returns combined product and section discount text.
+
+**Parameters:**
+- `product` (Object): Product data
+- `section` (Object): Section configuration
+- `translations` (Object): Translation strings
+- `money_format` (String): Shop's money format
+
+**Example:**
+```liquid
+{{ '' | discount_text: product, section, translations, money_format: shop.money_format }}
+```
+
+#### savings_text
+Returns formatted savings text for a product.
+
+**Parameters:**
+- `product` (Object): Product data
+- `section` (Object): Section configuration
+- `translations` (Object): Translation strings
+- `money_format` (String): Shop's money format
+
+**Example:**
+```liquid
+{{ '' | savings_text: product, section, translations, money_format: shop.money_format }}
+```
+
+### Formatting Filters
+
+#### money
+Formats price according to shop's money format.
+
+**Parameters:**
+- `money_format` (String): Shop's money format
+
+**Example:**
+```liquid
+{{ product.price | money: money_format: shop.money_format }}
+```
+
+### Style and Display Filters
+
+#### color
+Maps color names to valid CSS colors.
+
+**Parameters:**
+- `settings` (Object): Section settings containing color mappings
+
+**Example:**
+```liquid
+{{ variant.color | color: template.settings }}
+```
+
+#### optimize_image
+Optimizes image URL based on screen size and settings.
+
+**Parameters:**
+- `client_width` (Number): Client screen width
+- `settings` (Object): Section settings containing breakpoint configurations
+
+**Example:**
+```liquid
+{{ product.image | optimize_image: client_width: client_info.client_width, settings: template.settings }}
+```
+
+## Using Filters in Templates
+
+Here's an example of using multiple filters together:
+
+```liquid
+<div class="product-card">
+  <a href="{{ '' | tracking_url: section, ref_product_id: product.id }}">
+    <img 
+      src="{{ product.featured_image | optimize_image: client_width: client_info.client_width, settings: template.settings }}" 
+      alt="{{ product.title }}"
+      width="{{ image_dim.image_width }}"
+      height="{{ image_dim.image_height }}"
+    >
+    <h3>{{ product.title }}</h3>
+    <div class="price">{{ product.price | money: money_format: shop.money_format }}</div>
+    <div class="discount">{{ '' | discount_text: product, section, translations, money_format: shop.money_format }}</div>
+    <div class="savings">{{ '' | savings_text: product, section, translations, money_format: shop.money_format }}</div>
+  </a>
+</div>
+```
+
+## Filter Options
+
+### Money Format Options
+The money filter respects the shop's configured format, including:
+- Currency symbol position
+- Decimal separator
+- Thousands separator
+- Number of decimal places
+
+### Image Optimization Options
+The optimize_image filter considers:
+- Screen width breakpoints
+- Desired image dimensions
+- Device pixel ratio
+- Image format support
+
+### Color Mapping Options
+Color mapping supports:
+- Custom color name mappings in settings
+- CSS color names
+- Hex codes
+- RGB/RGBA values
+- HSL/HSLA values
+
+## Best Practices
+
+1. Always provide required parameters for each filter
+2. Use appropriate image dimensions for different viewports
+3. Test money formatting with different currencies and formats
+4. Validate color values before mapping
+5. Cache filtered values when possible
+6. Consider performance impact of complex filters
+
+## Error Handling
+
+Each filter includes built-in error handling:
+
+1. **tracking_url**
+   - Returns original URL if section or product data is missing
+   - Handles missing reference product ID gracefully
+
+2. **section_discount**
+   - Returns empty string if discount configuration is disabled
+   - Falls back to primary locale if translation is missing
+
+3. **discount_text**
+   - Returns empty string if required parameters are missing
+   - Handles missing price values safely
+
+4. **savings_text**
+   - Returns empty string if no savings available
+   - Handles missing translations gracefully
+
+5. **money**
+   - Returns empty string if price or format is missing
+   - Handles invalid price values safely
+
+6. **color**
+   - Returns original value if color mapping is not found
+   - Validates color values before returning
+
+7. **optimize_image**
+   - Returns original URL if required parameters are missing
+   - Falls back to default breakpoint if no matching breakpoint found
+
+## Support
+
+For questions about filters or custom filter development, contact our support team at support@glood.ai 

@@ -1,0 +1,88 @@
+---
+title: 'Tags'
+description: 'Learn about available tags for extending section template functionality'
+---
+
+# Section Template Tags
+
+Tags in Glood.AI section templates provide additional functionality and integrations for your product recommendations.
+
+## Available Tags
+
+### Product Review Integration
+
+#### product_review_app_integration
+Integrates product reviews from supported review apps.
+
+**Parameters:**
+- `product_id`: The product ID to fetch reviews for
+
+**Supported Apps:**
+- Judge.me
+- Loox
+
+**Example:**
+```liquid
+{% product_review_app_integration product_id: product.id %}
+```
+
+**Output Examples:**
+
+For Judge.me:
+```html
+<div class="jdgm-widget jdgm-preview-badge" data-id="1234567890" data-auto-install="false"></div>
+```
+
+For Loox:
+```html
+<div class="loox-widget" data-product-id="1234567890"></div>
+```
+
+## Using Tags in Templates
+
+Here's an example of using tags in a product card:
+
+```liquid
+<div class="product-card">
+  <img src="{{ product.featured_image | optimise_image: client_info, settings }}" alt="{{ product.title }}">
+  <h3>{{ product.title }}</h3>
+  <div class="price">{{ product.price | money_formatter: glood }}</div>
+  
+  <div class="reviews">
+    {% product_review_app_integration product_id: product.id %}
+  </div>
+</div>
+```
+
+## Tag Configuration
+
+### Review App Integration
+To use the review app integration:
+
+1. Configure your review app in the Glood.AI dashboard
+2. Add the appropriate review app scripts to your theme
+3. Use the tag in your section templates
+
+The tag will automatically:
+- Detect the configured review app
+- Generate appropriate widget markup
+- Handle missing configurations gracefully
+
+## Best Practices
+
+1. Always check if review app is configured before using the tag
+2. Handle cases where product ID might be missing
+3. Consider loading performance of review widgets
+4. Test integration with different review app configurations
+5. Provide fallback content when review app is not available
+
+## Error Handling
+
+The tag handles various error cases:
+- No review app configured: Shows HTML comment
+- Missing product data: Shows HTML comment
+- Unsupported review app: Shows HTML comment
+
+## Support
+
+For questions about tags or custom tag development, contact our support team at support@glood.ai 
