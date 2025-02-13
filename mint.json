@@ -103,10 +103,10 @@
           "group": "Section Template",
           "pages": [
             "for-developers/section-template/introduction",
+            "for-developers/section-template/code",
             "for-developers/section-template/filters",
             "for-developers/section-template/tags",
-            "for-developers/section-template/hooks",
-            "for-developers/section-template/template-structure"
+            "for-developers/section-template/hooks"
           ]
         }
       ]
