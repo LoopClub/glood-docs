@@ -26,43 +26,14 @@ The `glood` object provides essential store information and configuration settin
 
 ### Structure and Properties
 ```typescript
-interface Glood {
-  shopify: {
-    root_url: string;  // Base URL for the Shopify store
-  };
-  shop: {
-    money_format: string;  // Store's currency format
-  };
-  localization: {
-    language: {
-      locale: string;  // Current language/locale
-    }
-  };
-  product: {
-    id: string;  // Current product ID
-  };
+{
+  "shopify": {
+    "rootUrl": "https://yourshopifyurl.com"
+  },
+  "product": {
+    "id": "123456789"
+  }
 }
-```
-
-### Implementation Examples
-
-#### URL Construction
-When building product URLs, always use the `root_url` to ensure proper domain handling:
-
-```liquid
-{% assign product_url = glood.shopify.root_url | append: '/products/' | append: product.handle %}
-```
-
-**Why this matters:**
-- Handles multi-domain stores correctly
-- Works with different Shopify configurations
-- Maintains consistency across the store
-
-#### Price Formatting
-Use the store's money format for consistent price display:
-
-```liquid
-{% assign formatted_price = product.price | money_with_currency: glood.shop.money_format %}
 ```
 
 **Best practices:**
@@ -141,6 +112,13 @@ Implement language-specific content using the locale:
    {% assign locale = glood.localization.language.locale | default: 'en-US' %}
    ```
 
+### Properties Reference
+
+| Key | Type | Description | Required |
+|-----|------|-------------|----------|
+| `shopify.rootUrl` | string | Base URL of the Shopify store | Yes |
+| `product.id` | string | Current product identifier | Yes |
+
 ## Product Management (products Object)
 The products object is a fundamental component of the template system that:
 - Manages the collection of products to be displayed
@@ -151,20 +129,40 @@ The products object is a fundamental component of the template system that:
 
 ### Structure Overview
 ```typescript
-type Products = Array<{
-  id: number;
-  handle: string;
-  title: string;
-  vendor: string;
-  price: number;
-  compareAtPrice: number | null;
-  availableForSale: boolean;
-  featuredImage: { src: string };
-  images: Array<{ src: string }>;
-  variants: Array<Variant>;
-  options: Array<ProductOption>;
-  tags: string[];
-}>
+[
+  {
+    "id": "123456789",
+    "title": "Product Title",
+    "featured_image": {
+      "src": "image_url"
+    },
+    "variants": [
+      {
+        "id": "987654321",
+        "available_for_sale": true,
+        "price": "1000",
+        "compare_at_price": "1200",
+        "image": {
+          "src": "variant_image_url"
+        },
+        "selected_options": [
+          {
+            "name": "Color",
+            "value": "Red"
+          }
+        ]
+      }
+    ],
+    "vendor": "Vendor Name",
+    "tags": ["tag1", "tag2"],
+    "images": [
+      {
+        "src": "image_url"
+      }
+    ]
+  }
+]
+
 ```
 
 ### Working with Products
@@ -265,6 +263,24 @@ type Products = Array<{
 - Cache computed values when iterating through products
 - Use proper error handling for missing data
 
+### Properties Reference
+
+| Key | Type | Description | Required |
+|-----|------|-------------|----------|
+| `id` | string | Unique product identifier | Yes |
+| `title` | string | Product name/title | Yes |
+| `featured_image.src` | string | URL of main product image | Yes |
+| `variants` | array | List of product variants | Yes |
+| `variants[].id` | string | Unique variant identifier | Yes |
+| `variants[].available_for_sale` | boolean | Stock availability status | Yes |
+| `variants[].price` | string | Variant price | Yes |
+| `variants[].compare_at_price` | string | Original/compare-at price | No |
+| `variants[].image.src` | string | Variant-specific image URL | No |
+| `variants[].selected_options` | array | Selected variant options | No |
+| `vendor` | string | Product vendor/brand name | No |
+| `tags` | array | Product tag list | No |
+| `images[].src` | string | Additional product image URLs | No |
+
 ## Language & Text Control (translations Object)
 The translations object manages multi-language support and customizable text throughout the template.
 
@@ -280,24 +296,13 @@ The translations object serves multiple purposes:
 #### 1. Product-related Translations
 ```typescript
 interface ProductTranslations {
-  price_label: string;              // "Price"
-  from_price_label: string;         // "From"
-  sale_price_label: string;         // "Sale"
-  vendor_label: string;             // "Brand"
-  out_of_stock_text: string;        // "Out of Stock"
-  available_soon_text: string;      // "Coming Soon"
-  choose_options: string;           // "Choose Options"
-}
-```
-
-#### 2. Cart Interactions
-```typescript
-interface CartTranslations {
-  add_to_cart_text: string;         // "Add to Cart"
-  adding_to_cart_text: string;      // "Adding..."
-  added_to_cart_text: string;       // "Added!"
-  atc_error_text: string;           // "Error adding to cart"
-  view_cart_text: string;           // "View Cart"
+  "oos_text": "Out Of Stock",
+  "added_to_cart_text": "Added to cart",
+  "atc_error_text": "Error while add to cart",
+  "atc_text": "Add to Cart",
+  "total_price_text": "Total Price",
+  "fbt_add_to_cart_text": "Add to Cart",
+  "fbt_added_to_cart_text": "Added to cart"
 }
 ```
 
@@ -407,6 +412,230 @@ interface CartTranslations {
 {% endif %}
 ```
 
+### Properties Reference
+
+| Key | Type | Description | Required |
+|-----|------|-------------|----------|
+| `oos_text` | string | Out of stock message | Yes |
+| `added_to_cart_text` | string | Success message for cart addition | Yes |
+| `atc_error_text` | string | Error message for cart addition | Yes |
+| `atc_text` | string | Add to cart button text | Yes |
+| `total_price_text` | string | Total price label | Yes |
+| `fbt_add_to_cart_text` | string | Bundle add to cart text | No |
+| `fbt_added_to_cart_text` | string | Bundle success message | No |
+
+## Section Configuration (section Object)
+The section object controls how your recommendation section is structured and behaves. Think of it as the blueprint for your section's layout and functionality.
+
+### Purpose and Usage
+The section object is crucial for:
+- Defining the section's basic structure
+- Managing product display layouts
+- Controlling interactive features
+- Setting up titles and descriptions
+- Handling responsive behaviors
+
+### Structure Overview
+```json
+{
+  "id": "section_id",
+  "layout": "horizontal_grid",
+  "title": "Section Title"
+}
+```
+
+### Implementation Examples
+
+#### 1. Basic Section Setup
+```liquid
+<div class="gai-section" data-section-id="{{ section.id }}">
+  <header class="gai-header">
+    {% if section.title %}
+      <h2>{{ section.title }}</h2>
+    {% endif %}
+    {% if section.subtitle %}
+      <p>{{ section.subtitle }}</p>
+    {% endif %}
+  </header>
+  
+  <div class="gai-content" data-layout="{{ section.layout }}">
+    <!-- Section content -->
+  </div>
+</div>
+```
+
+#### 2. Layout Implementation
+```liquid
+{% case section.layout %}
+  {% when 'grid' %}
+    {% render 'product-grid' with 
+      products: products,
+      columns: section.settings.productsToShow
+    %}
+    
+  {% when 'carousel' %}
+    {% render 'product-carousel' with 
+      products: products,
+      autoplay: section.settings.enableAutoplay,
+      speed: section.settings.autoplaySpeed
+    %}
+{% endcase %}
+```
+
+### Best Practices
+
+1. **Layout Selection**
+   - Choose appropriate layouts for different contexts
+   - Consider mobile responsiveness
+   - Test with various product counts
+
+2. **Title Management**
+   - Keep titles concise and clear
+   - Use subtitles for additional context
+   - Ensure proper heading hierarchy
+
+3. **Settings Configuration**
+   - Set reasonable defaults
+   - Consider performance implications
+   - Validate all settings values
+
+### Properties Reference
+
+| Key | Type | Description | Required |
+|-----|------|-------------|----------|
+| `id` | string | Unique section identifier | Yes |
+| `layout` | string | Section layout type ('horizontal_grid', etc.) | Yes |
+| `title` | string | Section heading text | No |
+
+## Template Appearance (template Object)
+The template object is your control center for visual styling and responsive behavior. It manages how your section looks and adapts across different devices.
+
+### Purpose and Usage
+The template object is responsible for:
+- Managing responsive breakpoints
+- Controlling visual styling
+- Handling product card appearance
+- Managing interactive behaviors
+- Implementing custom themes
+
+### Structure Overview
+```json
+{
+  "settings": {
+    "product_card": {
+      "add_to_cart_mode": "image_hover",
+      "variant_selector_type": "dropdown",
+      "max_labels_count": 3,
+      "show_discount_pill": true
+    },
+    "labels": [
+      {
+        "name": "New"
+      },
+      {
+        "name": "Sale"
+      }
+    ]
+  },
+  "translations": {
+    "oos_text": "Out Of Stock",
+    "added_to_cart_text": "Added to cart",
+    "atc_error_text": "Error while add to cart",
+    "atc_text": "Add to Cart",
+    "total_price_text": "Total Price",
+    "fbt_add_to_cart_text": "Add to Cart",
+    "fbt_added_to_cart_text": "Added to cart"
+  }
+}
+```
+
+### Implementation Examples
+
+#### 1. Responsive Breakpoint Usage
+```liquid
+{% assign current_breakpoint = 'large' %}
+{% if template.settings.breakpoints.small.screenSize >= page_width %}
+  {% assign current_breakpoint = 'small' %}
+{% elsif template.settings.breakpoints.medium.screenSize >= page_width %}
+  {% assign current_breakpoint = 'medium' %}
+{% endif %}
+
+<div class="product-grid" style="
+  --cards-per-view: {{ template.settings.breakpoints[current_breakpoint].cardsPerView }};
+  --grid-gap: {{ template.settings.breakpoints[current_breakpoint].gutter }}px;
+">
+  <!-- Grid content -->
+</div>
+```
+
+#### 2. Product Card Styling
+```liquid
+<div class="product-card" style="
+  --vendor-position: {{ template.settings.productCard.vendorPosition }};
+  --hover-effect: {{ template.settings.productCard.imageHoverMode }};
+">
+  {% if template.settings.productCard.showVendor %}
+    <div class="vendor">{{ product.vendor }}</div>
+  {% endif %}
+  <!-- Card content -->
+</div>
+```
+
+### Common Customizations
+
+#### 1. Visual Themes
+```liquid
+{% assign theme = template.settings.theme %}
+<style>
+  .gai-section {
+    --primary-color: {{ theme.primaryColor }};
+    --text-color: {{ theme.textColor }};
+    --background: {{ theme.backgroundColor }};
+  }
+</style>
+```
+
+#### 2. Interactive Behaviors
+```liquid
+{% if template.settings.productCard.imageHoverMode == 'zoom' %}
+  <script>
+    setupZoomEffect('.product-image', {
+      scale: {{ template.settings.productCard.zoomFactor | default: 1.2 }}
+    });
+  </script>
+{% endif %}
+```
+
+### Best Practices
+
+1. **Responsive Design**
+   - Test across all breakpoints
+   - Use relative units when possible
+   - Consider touch devices
+
+2. **Performance**
+   - Optimize image loading
+   - Minimize style calculations
+   - Use efficient selectors
+
+3. **Maintainability**
+   - Group related settings
+   - Use consistent naming
+   - Document custom features
+
+### Properties Reference
+
+| Key | Type | Description | Required |
+|-----|------|-------------|----------|
+| `settings.product_card` | object | Product card configuration | Yes |
+| `settings.product_card.add_to_cart_mode` | enum | Cart button behavior | Yes |
+| `settings.product_card.variant_selector_type` | enum | Variant selection UI type | Yes |
+| `settings.product_card.max_labels_count` | number | Maximum product labels to show | No |
+| `settings.product_card.show_discount_pill` | boolean | Toggle discount badge | No |
+| `settings.labels` | array | Product label configurations | No |
+| `settings.labels[].name` | string | Label display text | Yes |
+| `translations` | object | Section-specific translations | Yes |
+
 ## Styling Your Section (css.liquid)
 The css.liquid file manages all styling for the recommendation sections, providing:
 - Dynamic styling based on template settings
@@ -415,123 +644,33 @@ The css.liquid file manages all styling for the recommendation sections, providi
 - Custom animations and transitions
 - Accessibility-focused styles
 
-### Core Components
+### CSS Variables Reference
 
-#### 1. CSS Variables
-```scss
-:root {
-  // Colors
-  --gai-primary-color: {{ template.settings.productCard.color }};
-  --gai-price-color: {{ template.settings.productCard.priceColor }};
-  --gai-title-color: {{ template.settings.productCard.titleColor }};
-  --gai-discount-color: {{ template.settings.productCard.discountColor }};
-  
-  // Spacing
-  --gai-grid-gap: {{ template.settings.breakpoints[current_breakpoint].gutter }}px;
-  --gai-card-padding: 12px;
-  
-  // Typography
-  --gai-title-font-size: {{ template.settings.breakpoints[current_breakpoint].widgetTitleFontSize }}px;
-  --gai-product-title-font-size: {{ template.settings.breakpoints[current_breakpoint].productTitleFontSize }}px;
-}
-```
+| Variable | Type | Description | Default |
+|----------|------|-------------|---------|
+| `--gai-primary-color` | color | Main theme color | `#000000` |
+| `--gai-secondary-color` | color | Secondary theme color | `#666666` |
+| `--gai-price-color` | color | Price text color | `#333333` |
+| `--gai-title-color` | color | Title text color | `#000000` |
+| `--gai-discount-color` | color | Discount badge color | `#ff0000` |
+| `--gai-grid-gap` | length | Space between grid items | `20px` |
+| `--gai-card-padding` | length | Internal card spacing | `12px` |
+| `--gai-title-font-size` | length | Section title size | `24px` |
+| `--gai-product-title-font-size` | length | Product title size | `16px` |
+| `--gai-vendor-font-size` | length | Vendor name size | `14px` |
+| `--gai-price-font-size` | length | Price text size | `16px` |
+| `--cards-per-view` | number | Products per row | `4` |
 
-#### 2. Grid Layout System
-```scss
-._gai-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--cards-per-view), 1fr);
-  gap: var(--gai-grid-gap);
-  width: 100%;
-  
-  @media (max-width: 768px) {
-    --cards-per-view: {{ template.settings.breakpoints.small.cardsPerView }};
-  }
-  
-  @media (min-width: 769px) and (max-width: 1024px) {
-    --cards-per-view: {{ template.settings.breakpoints.medium.cardsPerView }};
-  }
-  
-  @media (min-width: 1025px) {
-    --cards-per-view: {{ template.settings.breakpoints.large.cardsPerView }};
-  }
-}
-```
+### Class Reference
 
-#### 3. Product Card Styles
-```scss
-._gai-prd-crd {
-  position: relative;
-  background: var(--gai-card-background, transparent);
-  padding: var(--gai-card-padding);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  &:hover {
-    {% if template.settings.productCard.hoverEffect == 'lift' %}
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    {% endif %}
-  }
-  
-  ._gai-prod-img {
-    aspect-ratio: {{ template.settings.productCard.imageAspectRatio }};
-    object-fit: {{ template.settings.productCard.imageObjectFit }};
-    width: 100%;
-    height: auto;
-  }
-  
-  ._gai-prod-tit {
-    color: var(--gai-title-color);
-    font-size: var(--gai-product-title-font-size);
-    margin: 8px 0;
-    
-    {% if template.settings.productCard.maxTitleLines %}
-      display: -webkit-box;
-      -webkit-line-clamp: {{ template.settings.productCard.maxTitleLines }};
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    {% endif %}
-  }
-}
-```
-
-#### 4. Carousel Styles
-```scss
-._gai-crz-cnt {
-  position: relative;
-  
-  .swiper-slide {
-    height: auto;
-  }
-  
-  ._gai-nav-wrp {
-    display: flex;
-    gap: 8px;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1;
-    
-    button {
-      background: {{ template.settings.carousel.navigationBackground }};
-      color: {{ template.settings.carousel.navigationColor }};
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      cursor: pointer;
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-  }
-}
-```
+| Class Name | Purpose | Properties Controlled |
+|------------|---------|---------------------|
+| `._gai-grid` | Main grid container | Layout, spacing |
+| `._gai-prd-crd` | Product card wrapper | Card appearance |
+| `._gai-prod-img` | Product image | Image display |
+| `._gai-prod-tit` | Product title | Text styling |
+| `._gai-crz-cnt` | Carousel container | Slider layout |
+| `._gai-nav-wrp` | Navigation wrapper | Button container |
 
 ## Adding Interactivity (theme.js)
 The theme.js file is the core JavaScript file that makes your recommendation sections interactive. Think of it as the "brain" that controls how your products behave when users interact with them.
@@ -663,6 +802,41 @@ section.on('addToCart', async (event) => {
 3. Optimize for performance
 4. Ensure accessibility compliance
 5. Test across different devices and browsers
+
+### Event Reference
+
+| Event Name | Parameters | Description | Required |
+|------------|------------|-------------|----------|
+| `variantChange` | `{productId, variantId, options}` | Triggered when variant is selected | Yes |
+| `addToCart` | `{variantId, quantity}` | Triggered when adding to cart | Yes |
+| `imageHover` | `{productId, imageUrl, index}` | Triggered on image hover | No |
+| `imageReset` | `{productId}` | Triggered when hover ends | No |
+| `carouselChange` | `{index}` | Triggered on slide change | No |
+| `carouselEnd` | `{}` | Triggered at last slide | No |
+
+### Method Reference
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `initCarousel` | `container, options` | `void` | Initialize product carousel |
+| `updatePrice` | `productId, price` | `void` | Update product price display |
+| `updateImage` | `productId, imageUrl` | `void` | Update product image |
+| `addToCart` | `variantId, quantity` | `Promise<CartResponse>` | Add item to cart |
+| `updateVariant` | `productId, variantId` | `void` | Change product variant |
+| `on` | `eventName, callback` | `void` | Add event listener |
+| `off` | `eventName, callback` | `void` | Remove event listener |
+
+### Configuration Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `autoplay` | boolean | Enable carousel autoplay | `false` |
+| `autoplaySpeed` | number | Delay between slides (ms) | `3000` |
+| `slidesPerView` | number/string | Cards per view | `'auto'` |
+| `spaceBetween` | number | Space between slides | `20` |
+| `loop` | boolean | Enable infinite loop | `false` |
+| `navigation` | boolean | Show nav buttons | `true` |
+| `pagination` | boolean | Show dot indicators | `true` |
 
 ## Customization Options (settings.json)
 A comprehensive guide to personalizing your recommendation section's appearance and behavior.
