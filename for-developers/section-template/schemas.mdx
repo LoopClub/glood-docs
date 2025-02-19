@@ -1,287 +1,97 @@
 --- 
-title: "Section Builder Guide" 
+title: "Object Definitions" 
 description: "Complete guide to building and customizing Glood.AI recommendation sections" 
 ---
 
-# Building Your Product Recommendation Section
-
 ## Understanding Core Components
-The template system uses five essential building blocks that work together:
+The template system uses seven essential building blocks that work together:
 
 1. `glood` - Global store configuration
 2. `products` - Product data management
 3. `translations` - Multi-language support
 4. `section` - Layout and behavior control
-5. `template` - Appearance and settings
+5. `template` - Appearance and styling settings
+6. `clientInfo` - Device and viewport information
+7. `config` - Integration and feature management
 
-## Store Configuration (glood Object)
-The global configuration object that serves as the bridge between your Shopify store and Glood.AI templates.
+## glood Object
+The global object contains the store information required by the glood application to work properly on your store.
 
 ### Purpose and Usage
-The `glood` object provides essential store information and configuration settings that are used throughout the template. It's particularly important for:
+The glood object provides essential store information and configuration settings that are used throughout the template. It's particularly important for:
 - Building correct store URLs
 - Formatting prices according to store settings
 - Handling localization
 - Managing product references
 
-### Structure and Properties
-```typescript
-{
-  "shopify": {
-    "rootUrl": "https://yourshopifyurl.com"
-  },
-  "product": {
-    "id": "123456789"
-  }
-}
-```
-
-**Best practices:**
-- Always use the store's money format for consistency
-- Handle zero and null prices gracefully
-- Consider currency conversion when needed
-
-#### Localization Implementation
-Implement language-specific content using the locale:
-
-```liquid
-{% if glood.localization.language.locale == 'fr-FR' %}
-  <span class="price-label">{{ translations.price_label_fr }}</span>
-{% else %}
-  <span class="price_label">{{ translations.price_label_en }}</span>
-{% endif %}
-```
-
-**Key considerations:**
-- Support RTL languages when needed
-- Use locale-specific date formats
-- Handle currency symbols appropriately
-
-### Common Patterns and Best Practices
-
-1. **URL Construction**
-   ```liquid
-   {%- capture product_url -%}
-     {{ glood.shopify.root_url }}/products/{{ product.handle }}?ref={{ glood.product.id }}
-   {%- endcapture -%}
-   ```
-   - Always include reference product ID for tracking
-   - Use capture for complex URLs
-   - Ensure proper URL encoding
-
-2. **Price Handling**
-   ```liquid
-   {% assign price = product.price | default: 0 %}
-   {% if price > 0 %}
-     <div class="price">
-       {{ price | money: glood.shop.money_format }}
-     </div>
-   {% endif %}
-   ```
-   - Handle zero and null prices
-   - Use proper money formatting
-   - Consider sale prices
-
-3. **Localization**
-   ```liquid
-   {% assign current_locale = glood.localization.language.locale %}
-   {% assign date_format = current_locale | date_format %}
-   ```
-   - Use locale-specific formats
-   - Handle fallback content
-   - Consider cultural differences
-
-### Troubleshooting Common Issues
-
-1. **Missing Root URL**
-   ```liquid
-   {% if glood.shopify.root_url == blank %}
-     {% assign root_url = 'https://' | append: shop.domain %}
-   {% else %}
-     {% assign root_url = glood.shopify.root_url %}
-   {% endif %}
-   ```
-
-2. **Invalid Money Format**
-   ```liquid
-   {% assign money_format = glood.shop.money_format | default: '${{amount}}' %}
-   ```
-
-3. **Locale Handling**
-   ```liquid
-   {% assign locale = glood.localization.language.locale | default: 'en-US' %}
-   ```
-
 ### Properties Reference
 
 | Key | Type | Description | Required |
 |-----|------|-------------|----------|
-| `shopify.rootUrl` | string | Base URL of the Shopify store | Yes |
+| `shopify.root_url` | string | Base URL of the Shopify store | Yes |
 | `product.id` | string | Current product identifier | Yes |
+| `shop.money_format` | string | Store's currency format | Yes |
+| `shop.currency` | string | Store's currency code | Yes |
+| `localization.language.locale` | string | Language code (e.g., 'en') | Yes |
+| `localization.language.primary` | boolean | Whether this is primary language | Yes |
+| `localization.language.rootUrl` | string | Base URL for language ('/' for primary) | Yes |
+| `localization.country` | string | Country code (e.g., 'IN') | Yes |
+| `localization.currency` | string | Currency code (e.g., 'INR') | Yes |
+| `market.id` | string | Unique market identifier | Yes |
+| `market.handle` | string | Market handle (e.g., 'in') | Yes |
 
-## Product Management (products Object)
-The products object is a fundamental component of the template system that:
-- Manages the collection of products to be displayed
-- Handles product data organization and presentation
+**NOTE:** All property keys are automatically converted to snake_case when used in Liquid templates. For example:
+- `rootUrl` → `root_url`
+- `devicePixelRatio` → `device_pixel_ratio`
+- `moneyFormat` → `money_format`
+
+Example usage in Liquid:
+```liquid
+{{ glood.shop.money_format }}
+{{ glood.localization.language.root_url }}
+```
+
+## product Array
+The products object is a fundamental component that manages product data and presentation in the template system.
+
+### Purpose and Usage
+The products object is responsible for:
+- Managing the collection of products to be displayed
+- Handling product data organization and presentation
 - Controls variant and option configurations
-- Manages pricing and inventory information
-- Provides media assets for product display
-
-### Structure Overview
-```typescript
-[
-  {
-    "id": "123456789",
-    "title": "Product Title",
-    "featured_image": {
-      "src": "image_url"
-    },
-    "variants": [
-      {
-        "id": "987654321",
-        "available_for_sale": true,
-        "price": "1000",
-        "compare_at_price": "1200",
-        "image": {
-          "src": "variant_image_url"
-        },
-        "selected_options": [
-          {
-            "name": "Color",
-            "value": "Red"
-          }
-        ]
-      }
-    ],
-    "vendor": "Vendor Name",
-    "tags": ["tag1", "tag2"],
-    "images": [
-      {
-        "src": "image_url"
-      }
-    ]
-  }
-]
-
-```
-
-### Working with Products
-
-#### 1. Basic Product Display
-```liquid
-{% for product in products %}
-  <div class="product-card">
-    <img 
-      src="{{ product.featuredImage.src }}" 
-      alt="{{ product.title }}"
-      width="{{ image_dim.width }}"
-      height="{{ image_dim.height }}"
-      loading="lazy"
-    >
-    <h3>{{ product.title }}</h3>
-    <div class="price">
-      {% if product.compareAtPrice > product.price %}
-        <span class="compare-at">{{ product.compareAtPrice | money }}</span>
-      {% endif %}
-      <span class="current">{{ product.price | money }}</span>
-    </div>
-  </div>
-{% endfor %}
-```
-
-#### 2. Variant Selection
-```liquid
-{% if product.variants.size > 1 %}
-  <select class="variant-selector" data-product-id="{{ product.id }}">
-    {% for variant in product.variants %}
-      <option 
-        value="{{ variant.id }}"
-        {% if variant.availableForSale == false %}disabled{% endif %}
-      >
-        {{ variant.title }} - {{ variant.price | money }}
-      </option>
-    {% endfor %}
-  </select>
-{% endif %}
-```
-
-#### 3. Color Swatches
-```liquid
-{% for option in product.options %}
-  {% if option.name == 'Color' %}
-    <div class="color-swatches">
-      {% for value in option.optionValues %}
-        <button 
-          class="swatch"
-          data-value="{{ value }}"
-          style="background-color: {{ value | color_value: template.settings.colorMapping }}"
-        ></button>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endfor %}
-```
-
-### Advanced Features
-
-#### 1. Product Availability Badge
-```liquid
-{% if product.availableForSale == false %}
-  <div class="badge out-of-stock">
-    {{ translations.out_of_stock_text }}
-  </div>
-{% elsif product.compareAtPrice > product.price %}
-  <div class="badge on-sale">
-    {% assign savings = product.compareAtPrice | minus: product.price %}
-    {{ translations.save_text }} {{ savings | money }}
-  </div>
-{% endif %}
-```
-
-#### 2. Dynamic Image Loading
-```liquid
-<div class="product-images">
-  <img 
-    class="primary"
-    src="{{ product.featuredImage.src }}"
-    alt="{{ product.title }}"
-  >
-  {% if product.images[1] %}
-    <img 
-      class="hover"
-      src="{{ product.images[1].src }}"
-      alt="{{ product.title }} - Alternate View"
-      loading="lazy"
-    >
-  {% endif %}
-</div>
-```
-
-### Best Practices
-- Always check for `availableForSale` before allowing purchase
-- Implement lazy loading for images beyond the first view
-- Cache computed values when iterating through products
-- Use proper error handling for missing data
+- Managing pricing and inventory information
+- Providing media assets for product display
 
 ### Properties Reference
 
 | Key | Type | Description | Required |
 |-----|------|-------------|----------|
-| `id` | string | Unique product identifier | Yes |
-| `title` | string | Product name/title | Yes |
-| `featured_image.src` | string | URL of main product image | Yes |
-| `variants` | array | List of product variants | Yes |
-| `variants[].id` | string | Unique variant identifier | Yes |
-| `variants[].available_for_sale` | boolean | Stock availability status | Yes |
+| `id` | string | Product identifier | Yes |
+| `title` | string | Product name | Yes |
+| `handle` | string | Product URL handle | Yes |
+| `vendor` | string | Product vendor name | No |
+| `tags` | array | Product tags | No |
+| `featured_image.src` | string | Main product image URL | Yes |
+| `images[].src` | string | Additional image URLs | No |
+| `variants` | array | Product variants | Yes |
+| `variants[].id` | string | Variant identifier | Yes |
+| `variants[].title` | string | Variant title | Yes |
+| `variants[].available_for_sale` | boolean | Stock availability | Yes |
 | `variants[].price` | string | Variant price | Yes |
-| `variants[].compare_at_price` | string | Original/compare-at price | No |
-| `variants[].image.src` | string | Variant-specific image URL | No |
+| `variants[].compare_at_price` | string | Original price | No |
+| `variants[].image.src` | string | Variant image URL | No |
 | `variants[].selected_options` | array | Selected variant options | No |
-| `vendor` | string | Product vendor/brand name | No |
-| `tags` | array | Product tag list | No |
-| `images[].src` | string | Additional product image URLs | No |
+| `variants[].selected_options[].name` | string | Option name | Yes |
+| `variants[].selected_options[].value` | string | Option value | Yes |
+| `options` | array | Product options | No |
+| `options[].name` | string | Option name | Yes |
+| `options[].option_values` | array | Available option values | Yes |
+| `show_compare_price` | boolean | Show compare at price | No |
+| `first_variant` | object | First available variant | Yes |
 
-## Language & Text Control (translations Object)
+**NOTE:** Product array structure is not fixed and it can be changed. If you want to change product array, you can visit the [transformProductData hook](/for-developers/section-template/hooks#transformProductData) in the hooks section.
+
+## translations Object
 The translations object manages multi-language support and customizable text throughout the template.
 
 ### Purpose and Usage
@@ -290,127 +100,6 @@ The translations object serves multiple purposes:
 - Enables customizable UI messages
 - Supports fallback text handling
 - Manages error messages and status notifications
-
-### Core Translation Categories
-
-#### 1. Product-related Translations
-```typescript
-interface ProductTranslations {
-  "oos_text": "Out Of Stock",
-  "added_to_cart_text": "Added to cart",
-  "atc_error_text": "Error while add to cart",
-  "atc_text": "Add to Cart",
-  "total_price_text": "Total Price",
-  "fbt_add_to_cart_text": "Add to Cart",
-  "fbt_added_to_cart_text": "Added to cart"
-}
-```
-
-### Implementation Examples
-
-#### 1. Basic Text Display
-```liquid
-<button class="add-to-cart">
-  {% if product.availableForSale %}
-    {{ translations.add_to_cart_text | default: 'Add to Cart' }}
-  {% else %}
-    {{ translations.out_of_stock_text | default: 'Out of Stock' }}
-  {% endif %}
-</button>
-```
-
-#### 2. Dynamic Status Messages
-```liquid
-<div class="cart-status" 
-  data-success-text="{{ translations.added_to_cart_text }}"
-  data-error-text="{{ translations.atc_error_text }}"
-  data-adding-text="{{ translations.adding_to_cart_text }}">
-  <span class="status-message"></span>
-</div>
-```
-
-### Best Practices
-
-1. **Always Use Fallbacks**
-```liquid
-{% assign button_text = translations.add_to_cart_text | default: 'Add to Cart' %}
-```
-
-2. **Handle Missing Translations**
-```liquid
-{% if translations.size > 0 %}
-  {% assign text = translations[key] %}
-{% else %}
-  {% assign text = default_translations[key] %}
-{% endif %}
-```
-
-3. **Language-specific Formatting**
-```liquid
-{% assign price_label = translations.price_label %}
-{% if glood.localization.language.locale == 'ar' %}
-  {% assign price_label = price_label | append: ' :' %}
-{% else %}
-  {% assign price_label = price_label | append: ': ' %}
-{% endif %}
-```
-
-### Common Use Cases
-
-#### 1. Bundle Pricing Display
-```liquid
-<div class="bundle-summary">
-  <span class="total-label">
-    {{ translations.total_price_text | default: 'Total Price' }}
-  </span>
-  
-  {% if section.discount_config %}
-    <span class="savings">
-      {{ translations.you_save_text | default: 'You Save' }}:
-      {{ total_savings | money }}
-    </span>
-  {% endif %}
-</div>
-```
-
-#### 2. Variant Selection
-```liquid
-<div class="variant-selector">
-  <label>
-    {{ translations.select_variant | default: 'Select Option' }}:
-    {% if option.required %}
-      <span class="required">
-        {{ translations.required_text | default: '*' }}
-      </span>
-    {% endif %}
-  </label>
-</div>
-```
-
-### Error Handling
-
-#### 1. Missing Translation Keys
-```liquid
-{% capture get_translation %}
-  {% assign text = translations[key] %}
-  {% if text == blank %}
-    {% assign text = default_translations[key] %}
-  {% endif %}
-  {% if text == blank %}
-    {% assign text = '[Missing translation: ' | append: key | append: ']' %}
-  {% endif %}
-{% endcapture %}
-```
-
-#### 2. Format Validation
-```liquid
-{% assign price_text = translations.price_text %}
-{% if price_text contains '%{price}' %}
-  {% assign formatted_text = price_text | replace: '%{price}', price_amount %}
-{% else %}
-  {% assign formatted_text = price_amount %}
-{% endif %}
-```
 
 ### Properties Reference
 
@@ -423,9 +112,14 @@ interface ProductTranslations {
 | `total_price_text` | string | Total price label | Yes |
 | `fbt_add_to_cart_text` | string | Bundle add to cart text | No |
 | `fbt_added_to_cart_text` | string | Bundle success message | No |
+| `discount_label_text` | string | Discount label text | No |
+| `discount_save_text` | string | Savings amount text | No |
+| `fbt_save_text` | string | Bundle savings text | No |
+| `swatch_label_Color` | string | Color swatch label | No |
+| `swatch_label_Size` | string | Size swatch label | No |
 
-## Section Configuration (section Object)
-The section object controls how your recommendation section is structured and behaves. Think of it as the blueprint for your section's layout and functionality.
+## section Object
+The section object controls how your recommendation section is structured and behaves.
 
 ### Purpose and Usage
 The section object is crucial for:
@@ -435,70 +129,6 @@ The section object is crucial for:
 - Setting up titles and descriptions
 - Handling responsive behaviors
 
-### Structure Overview
-```json
-{
-  "id": "section_id",
-  "layout": "horizontal_grid",
-  "title": "Section Title"
-}
-```
-
-### Implementation Examples
-
-#### 1. Basic Section Setup
-```liquid
-<div class="gai-section" data-section-id="{{ section.id }}">
-  <header class="gai-header">
-    {% if section.title %}
-      <h2>{{ section.title }}</h2>
-    {% endif %}
-    {% if section.subtitle %}
-      <p>{{ section.subtitle }}</p>
-    {% endif %}
-  </header>
-  
-  <div class="gai-content" data-layout="{{ section.layout }}">
-    <!-- Section content -->
-  </div>
-</div>
-```
-
-#### 2. Layout Implementation
-```liquid
-{% case section.layout %}
-  {% when 'grid' %}
-    {% render 'product-grid' with 
-      products: products,
-      columns: section.settings.productsToShow
-    %}
-    
-  {% when 'carousel' %}
-    {% render 'product-carousel' with 
-      products: products,
-      autoplay: section.settings.enableAutoplay,
-      speed: section.settings.autoplaySpeed
-    %}
-{% endcase %}
-```
-
-### Best Practices
-
-1. **Layout Selection**
-   - Choose appropriate layouts for different contexts
-   - Consider mobile responsiveness
-   - Test with various product counts
-
-2. **Title Management**
-   - Keep titles concise and clear
-   - Use subtitles for additional context
-   - Ensure proper heading hierarchy
-
-3. **Settings Configuration**
-   - Set reasonable defaults
-   - Consider performance implications
-   - Validate all settings values
-
 ### Properties Reference
 
 | Key | Type | Description | Required |
@@ -507,8 +137,8 @@ The section object is crucial for:
 | `layout` | string | Section layout type ('horizontal_grid', etc.) | Yes |
 | `title` | string | Section heading text | No |
 
-## Template Appearance (template Object)
-The template object is your control center for visual styling and responsive behavior. It manages how your section looks and adapts across different devices.
+## template Object
+The template object is your control center for visual styling and responsive behavior.
 
 ### Purpose and Usage
 The template object is responsible for:
@@ -518,389 +148,244 @@ The template object is responsible for:
 - Managing interactive behaviors
 - Implementing custom themes
 
-### Structure Overview
-```json
-{
-  "settings": {
-    "product_card": {
-      "add_to_cart_mode": "image_hover",
-      "variant_selector_type": "dropdown",
-      "max_labels_count": 3,
-      "show_discount_pill": true
-    },
-    "labels": [
-      {
-        "name": "New"
-      },
-      {
-        "name": "Sale"
-      }
-    ]
-  },
-  "translations": {
-    "oos_text": "Out Of Stock",
-    "added_to_cart_text": "Added to cart",
-    "atc_error_text": "Error while add to cart",
-    "atc_text": "Add to Cart",
-    "total_price_text": "Total Price",
-    "fbt_add_to_cart_text": "Add to Cart",
-    "fbt_added_to_cart_text": "Added to cart"
-  }
-}
-```
+### Properties Reference
 
-### Implementation Examples
+| Key | Type | Description | Example | Required |
+|-----|------|-------------|---------|----------|
+| `settings.breakpoints.small` | object | Mobile device settings | See breakpoint example | Yes |
+| `settings.breakpoints.medium` | object | Tablet device settings | See breakpoint example | Yes |
+| `settings.breakpoints.large` | object | Desktop device settings | See breakpoint example | Yes |
+| `settings.breakpoints[].cardsPerView` | number | Number of cards per row | `2` (mobile), `3` (tablet), `4` (desktop) | Yes |
+| `settings.breakpoints[].gutter` | number | Space between cards in pixels | `10` (mobile), `20` (desktop) | Yes |
+| `settings.breakpoints[].justifyWidgetTitle` | enum | Title alignment | `"left"`, `"center"`, `"right"` | Yes |
+| `settings.breakpoints[].widgetTitleAlignment` | string | Widget title positioning | `"left"`, `"center"`, `"right"` | Yes |
+| `settings.breakpoints[].productTitleAlignment` | string | Product title alignment | `"left"`, `"center"`, `"right"` | Yes |
+| `settings.breakpoints[].comparePriceVisible` | boolean | Show/hide compare price | `true`, `false` | Yes |
+| `settings.breakpoints[].imageWidth` | number | Product image width | `300` | Yes |
+| `settings.breakpoints[].imageHeight` | number | Product image height | `300` | Yes |
+| `settings.breakpoints[].screenSize` | number | Breakpoint width threshold | `768` | Yes |
+| `settings.breakpoints[].maxSectionTitleRows` | number | Maximum section title rows | `2` | Yes |
+| `settings.breakpoints[].maxProductTitleRows` | number | Maximum product title rows | `2` | Yes |
+| `settings.breakpoints[].widgetTitleFontSize` | number | Section title font size | `24` | Yes |
+| `settings.breakpoints[].productTitleFontSize` | number | Product title font size | `16` | Yes |
+| `settings.breakpoints[].productVendorFontSize` | number | Vendor name font size | `14` | Yes |
+| `settings.product_card.vendorPosition` | enum | Vendor position | `"above"`, `"below"`, `"hidden"` | Yes |
+| `settings.product_card.addToCartMode` | enum | Add to cart behavior | `"card_hover"`, `"image_hover"`, `"fix"` | Yes |
+| `settings.product_card.imageHoverMode` | enum | Image hover effect | `"secondary"`, `"zoom"`, `"none"` | Yes |
+| `settings.product_card.imageObjectFit` | enum | Image fitting mode | `"contain"`, `"cover"` | Yes |
+| `settings.product_card.priceCompareMode` | enum | Compare price position | `"before"`, `"after"`, `"hidden"` | Yes |
+| `settings.product_card.discountLabelPosition` | enum | Discount badge position | `"left"`, `"right"`, `"center"` | Yes |
+| `settings.product_card.variantSelectorType` | enum | Variant selection UI | `"integrated"`, `"selector"`, `"swatch"` | Yes |
+| `settings.product_card.showQuantitySelector` | boolean | Show quantity selector | `true`, `false` | No |
+| `settings.product_card.minQuantity` | number | Minimum order quantity | `1` | No |
+| `settings.product_card.maxQuantity` | number | Maximum order quantity | `10` | No |
+| `settings.product_card.imageAspectRatio` | string | Image aspect ratio | `"1:1"` | Yes |
+| `settings.product_card.showVendor` | boolean | Show/hide vendor name | `true` | No |
+| `settings.product_card.maxTitleLines` | number | Maximum product title lines | `2` | Yes |
+| `settings.product_card.showDiscountPill` | boolean | Show/hide discount badge | `true` | No |
+| `settings.labels` | array | Product label configurations | See labels example | No |
+| `settings.labels[].name` | string | Label name | `"new"`, `"sale"` | Yes |
+| `settings.labels[].textColor` | string | Label text color | `"#ffffff"` | Yes |
+| `settings.labels[].backgroundColor` | string | Label background color | `"#ff0000"` | Yes |
+| `settings.maxLabelsCount` | number | Maximum labels to show | `2` | Yes |
+| `settings.swatches` | array | Swatch configurations | See swatches example | No |
+| `settings.swatches[].type` | enum | Swatch type | `"color"`, `"size"` | Yes |
+| `settings.swatches[].key` | string | Option key to match | `"color"`, `"size"` | Yes |
+| `settings.swatches[].optionNames` | array | Valid option names | `["Color", "Colour"]` | Yes |
+| `settings.carousel.library` | string | Carousel library to use | `"swiper"` | No |
+| `settings.carousel.showPagination` | boolean | Show carousel pagination | `true`, `false` | No |
+| `settings.amazon_bought_together.priceCompareAtMode` | enum | Bundle price compare mode | `"before"`, `"after"` | No |
+| `settings.amazon_bought_together.buttonBackgroundColor` | string | Bundle button background | `"#000000"` | No |
+| `translations` | object | Section-specific translations | See translations object | Yes |
 
-#### 1. Responsive Breakpoint Usage
-```liquid
-{% assign current_breakpoint = 'large' %}
-{% if template.settings.breakpoints.small.screenSize >= page_width %}
-  {% assign current_breakpoint = 'small' %}
-{% elsif template.settings.breakpoints.medium.screenSize >= page_width %}
-  {% assign current_breakpoint = 'medium' %}
-{% endif %}
+### Notes on addToCartMode behavior:
+1. `card_hover`: Add to cart button slides up from the bottom of the card when hovering over the product card.
+2. `image_hover`: Add to cart button appears overlaid on the product image when hovering over the image.
+3. `fix`: Add to cart button remains fixed/static at its position.
 
-<div class="product-grid" style="
-  --cards-per-view: {{ template.settings.breakpoints[current_breakpoint].cardsPerView }};
-  --grid-gap: {{ template.settings.breakpoints[current_breakpoint].gutter }}px;
-">
-  <!-- Grid content -->
-</div>
-```
+## clientInfo Object
+The clientInfo object provides information about the client's device and viewport settings.
 
-#### 2. Product Card Styling
-```liquid
-<div class="product-card" style="
-  --vendor-position: {{ template.settings.productCard.vendorPosition }};
-  --hover-effect: {{ template.settings.productCard.imageHoverMode }};
-">
-  {% if template.settings.productCard.showVendor %}
-    <div class="vendor">{{ product.vendor }}</div>
-  {% endif %}
-  <!-- Card content -->
-</div>
-```
-
-### Common Customizations
-
-#### 1. Visual Themes
-```liquid
-{% assign theme = template.settings.theme %}
-<style>
-  .gai-section {
-    --primary-color: {{ theme.primaryColor }};
-    --text-color: {{ theme.textColor }};
-    --background: {{ theme.backgroundColor }};
-  }
-</style>
-```
-
-#### 2. Interactive Behaviors
-```liquid
-{% if template.settings.productCard.imageHoverMode == 'zoom' %}
-  <script>
-    setupZoomEffect('.product-image', {
-      scale: {{ template.settings.productCard.zoomFactor | default: 1.2 }}
-    });
-  </script>
-{% endif %}
-```
-
-### Best Practices
-
-1. **Responsive Design**
-   - Test across all breakpoints
-   - Use relative units when possible
-   - Consider touch devices
-
-2. **Performance**
-   - Optimize image loading
-   - Minimize style calculations
-   - Use efficient selectors
-
-3. **Maintainability**
-   - Group related settings
-   - Use consistent naming
-   - Document custom features
+### Purpose and Usage
+The clientInfo object is essential for:
+- Responsive design decisions
+- Image optimization
+- Device-specific features
+- Performance optimizations
+- Browser compatibility checks
 
 ### Properties Reference
 
 | Key | Type | Description | Required |
 |-----|------|-------------|----------|
-| `settings.product_card` | object | Product card configuration | Yes |
-| `settings.product_card.add_to_cart_mode` | enum | Cart button behavior | Yes |
-| `settings.product_card.variant_selector_type` | enum | Variant selection UI type | Yes |
-| `settings.product_card.max_labels_count` | number | Maximum product labels to show | No |
-| `settings.product_card.show_discount_pill` | boolean | Toggle discount badge | No |
-| `settings.labels` | array | Product label configurations | No |
-| `settings.labels[].name` | string | Label display text | Yes |
-| `translations` | object | Section-specific translations | Yes |
+| `clientWidth` | number | Current viewport width in pixels | Yes |
+| `clientHeight` | number | Current viewport height in pixels | Yes |
+| `devicePixelRatio` | number | Device pixel ratio for image optimization | Yes |
+| `userAgent` | string | Browser's user agent string | Yes |
 
-## Styling Your Section (css.liquid)
-The css.liquid file manages all styling for the recommendation sections, providing:
-- Dynamic styling based on template settings
-- Responsive design implementation
-- Theme-consistent styling
-- Custom animations and transitions
-- Accessibility-focused styles
+## config Object
+The config object manages global configuration settings for the recommendation section.
 
-### CSS Variables Reference
+### Purpose and Usage
+The config object controls:
+- Integration enablement and management
+- Third-party app configurations
+- Feature availability
+- App-specific settings
 
-| Variable | Type | Description | Default |
-|----------|------|-------------|---------|
-| `--gai-primary-color` | color | Main theme color | `#000000` |
-| `--gai-secondary-color` | color | Secondary theme color | `#666666` |
-| `--gai-price-color` | color | Price text color | `#333333` |
-| `--gai-title-color` | color | Title text color | `#000000` |
-| `--gai-discount-color` | color | Discount badge color | `#ff0000` |
-| `--gai-grid-gap` | length | Space between grid items | `20px` |
-| `--gai-card-padding` | length | Internal card spacing | `12px` |
-| `--gai-title-font-size` | length | Section title size | `24px` |
-| `--gai-product-title-font-size` | length | Product title size | `16px` |
-| `--gai-vendor-font-size` | length | Vendor name size | `14px` |
-| `--gai-price-font-size` | length | Price text size | `16px` |
-| `--cards-per-view` | number | Products per row | `4` |
-
-### Class Reference
-
-| Class Name | Purpose | Properties Controlled |
-|------------|---------|---------------------|
-| `._gai-grid` | Main grid container | Layout, spacing |
-| `._gai-prd-crd` | Product card wrapper | Card appearance |
-| `._gai-prod-img` | Product image | Image display |
-| `._gai-prod-tit` | Product title | Text styling |
-| `._gai-crz-cnt` | Carousel container | Slider layout |
-| `._gai-nav-wrp` | Navigation wrapper | Button container |
-
-## Adding Interactivity (theme.js)
-The theme.js file is the core JavaScript file that makes your recommendation sections interactive. Think of it as the "brain" that controls how your products behave when users interact with them.
-
-### What Does theme.js Do?
-1. **Handles User Interactions**
-   - Manages what happens when users click buttons
-   - Updates prices when variants are selected
-   - Shows/hides elements based on user actions
-
-2. **Manages Product Data**
-   - Updates product information in real-time
-   - Handles adding items to cart
-   - Manages product variants and options
-
-3. **Controls Visual Elements**
-   - Manages product carousels
-   - Handles image switching on hover
-   - Controls loading states
-
-### Key Components
-
-#### 1. Variant Selection System
-This system manages what happens when customers choose different product options (like sizes or colors).
-
-**What it handles:**
-- Updates prices when a new variant is selected
-- Changes product images to match the selected variant
-- Updates availability status
-- Manages option combinations
-
-```typescript
-// Example of variant selection event data
-interface VariantChangeEvent {
-  productId: number;      // Which product is being changed
-  variantId: number;      // Which variant was selected
-  options: {              // What options were chosen
-    name: string;         // Option name (e.g., "Size")
-    value: string;        // Selected value (e.g., "Large")
-  }[];
-}
-```
-
-#### 2. Shopping Cart System
-Handles all cart-related operations like adding products and updating quantities.
-
-**Key features:**
-- Adds products to cart
-- Updates cart totals
-- Shows success/error messages
-- Manages multiple products
-
-```typescript
-// Cart interaction data structure
-interface CartAddEvent {
-  variantId: number;    // Which variant to add
-  quantity: number;     // How many to add
-}
-```
-
-#### 3. Image Management
-Controls how product images are displayed and handled.
-
-**Capabilities:**
-- Switches images on hover
-- Loads high-resolution images when needed
-- Manages image galleries
-- Handles lazy loading
-
-```typescript
-// Image event structure
-interface ImageEvent {
-  productId: number;    // Which product's image
-  imageUrl: string;     // Image to show
-  index: number;        // Position in gallery
-}
-```
-
-#### 4. Carousel Management
-Controls product sliders and carousels.
-
-**Features:**
-- Smooth sliding between products
-- Responsive to screen size
-- Touch-friendly navigation
-- Automatic sliding (optional)
-
-### How to Use
-
-1. **Basic Setup**
-```javascript
-// Create a new section
-const section = new GloodAISection(container);
-```
-
-2. **Listening for Events**
-```javascript
-// When a variant is selected
-section.on('variantChange', (event) => {
-  // Update the display
-});
-
-// When adding to cart
-section.on('addToCart', async (event) => {
-  // Handle cart addition
-});
-```
-
-### Common Use Cases
-
-1. **Updating Prices**
-   - When variants are selected
-   - When quantities change
-   - When discounts apply
-
-2. **Managing Cart**
-   - Adding items
-   - Updating quantities
-   - Showing cart status
-
-3. **Image Handling**
-   - Switching variant images
-   - Loading high-res versions
-   - Managing galleries
-
-### Best Practices
-1. Always validate data before operations
-2. Handle errors gracefully with user feedback
-3. Optimize for performance
-4. Ensure accessibility compliance
-5. Test across different devices and browsers
-
-### Event Reference
-
-| Event Name | Parameters | Description | Required |
-|------------|------------|-------------|----------|
-| `variantChange` | `{productId, variantId, options}` | Triggered when variant is selected | Yes |
-| `addToCart` | `{variantId, quantity}` | Triggered when adding to cart | Yes |
-| `imageHover` | `{productId, imageUrl, index}` | Triggered on image hover | No |
-| `imageReset` | `{productId}` | Triggered when hover ends | No |
-| `carouselChange` | `{index}` | Triggered on slide change | No |
-| `carouselEnd` | `{}` | Triggered at last slide | No |
-
-### Method Reference
-
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `initCarousel` | `container, options` | `void` | Initialize product carousel |
-| `updatePrice` | `productId, price` | `void` | Update product price display |
-| `updateImage` | `productId, imageUrl` | `void` | Update product image |
-| `addToCart` | `variantId, quantity` | `Promise<CartResponse>` | Add item to cart |
-| `updateVariant` | `productId, variantId` | `void` | Change product variant |
-| `on` | `eventName, callback` | `void` | Add event listener |
-| `off` | `eventName, callback` | `void` | Remove event listener |
-
-### Configuration Options
-
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `autoplay` | boolean | Enable carousel autoplay | `false` |
-| `autoplaySpeed` | number | Delay between slides (ms) | `3000` |
-| `slidesPerView` | number/string | Cards per view | `'auto'` |
-| `spaceBetween` | number | Space between slides | `20` |
-| `loop` | boolean | Enable infinite loop | `false` |
-| `navigation` | boolean | Show nav buttons | `true` |
-| `pagination` | boolean | Show dot indicators | `true` |
-
-## Customization Options (settings.json)
-A comprehensive guide to personalizing your recommendation section's appearance and behavior.
-
-### Available Settings
-Learn how to configure your section using these customizable options:
-
-#### Display & Layout Settings
-Control how your section appears across different screen sizes
-
-| Key | Type | Description | Default |
-|-----|------|-------------|---------|
-| `cardsPerView` | number | Number of product cards shown per row | 4 |
-| `gutter` | number | Space between cards in pixels | 20 |
-| `justifyWidgetTitle` | enum | Title alignment (`'left'`, `'center'`, `'right'`) | `'left'` |
-| `widgetTitleAlignment` | string | Widget title positioning | `'left'` |
-| `productTitleAlignment` | string | Product title text alignment | `'left'` |
-| `comparePriceVisible` | boolean | Show/hide compare at price | `true` |
-| `imageWidth` | number | Product image width in pixels | 300 |
-| `imageHeight` | number | Product image height in pixels | 300 |
-| `screenSize` | number | Breakpoint width threshold in pixels | 768 |
-| `maxSectionTitleRows` | number | Maximum rows for section title | 2 |
-| `maxProductTitleRows` | number | Maximum rows for product title | 2 |
-| `widgetTitleFontSize` | number | Section title font size in pixels | 24 |
-| `productTitleFontSize` | number | Product title font size in pixels | 16 |
-| `productVendorFontSize` | number | Vendor name font size in pixels | 14 |
-
-#### Product Card Customization
-Personalize how individual product cards look and behave
-
-| Key | Type | Description | Default |
-|-----|------|-------------|---------|
-| `vendorPosition` | enum | Vendor name position (`'above'`, `'below'`, `'hidden'`) | `'hidden'` |
-| `addToCartMode` | enum | Add to cart button behavior (`'card_hover'`, `'image_hover'`, `'fix'`) | `'card_hover'` |
-| `imageHoverMode` | enum | Image hover effect (`'secondary'`, `'zoom'`, `'none'`) | `'secondary'` |
-| `imageObjectFit` | enum | Image fitting mode (`'contain'`, `'cover'`) | `'contain'` |
-| `priceCompareMode` | enum | Compare price position (`'before'`, `'after'`, `'hidden'`) | `'before'` |
-| `discountLabelPosition` | enum | Discount badge position (`'left'`, `'right'`, `'center'`) | `'center'` |
-| `variantSelectorType` | enum | Variant selection UI (`'integrated'`, `'selector'`, `'swatch'`) | `'integrated'` |
-| `color` | string | Text color in one of three formats:<br />- RGB: `'rgb(51, 51, 51)'`<br />- Hex: `'#333333'`<br />- CSS Color: `'black'` | `'#333333'` |
-| `backgroundColor` | string | Background color in one of three formats:<br />- RGB: `'rgb(255, 255, 255)'`<br />- Hex: `'#ffffff'`<br />- CSS Color: `'white'` | `'#ffffff'` |
-| `imageAspectRatio` | string | Image aspect ratio (e.g., "1:1") | `'1:1'` |
-| `showVendor` | boolean | Show/hide vendor name | `true` |
-| `maxTitleLines` | number | Maximum product title lines | 2 |
-| `showDiscountPill` | boolean | Show/hide discount badge | `true` |
-| `showQuantitySelector` | boolean | Show/hide quantity input | `false` |
-
-**Notes on addToCartMode behavior:**
-1. `card_hover`: Add to cart button slides up from the bottom of the card when hovering over the product card
-2. `image_hover`: Add to cart button appears overlaid on the product image when hovering over the image
-3. `fix`: Add to cart button remains fixed/static at its position
-
-#### Bundle Features
-Configure "Frequently Bought Together" functionality
-
-| Key | Type | Description | Default |
-|-----|------|-------------|---------|
-| `priceCompareAtMode` | enum | Compare price position (`'before'`, `'after'`, `'hidden'`) | `'before'` |
-
-#### Color & Size Options
-Manage product variant displays with swatches
+### Properties Reference
 
 | Key | Type | Description | Required |
 |-----|------|-------------|----------|
-| `type` | enum | Swatch display type (`'color'`, `'size'`) | Yes |
-| `key` | string | Key should match the product option name | Yes |
-| `optionNames` | string[] | Array of valid option names | Yes |
+| `config.integrations_enabled` | array | List of enabled integration slugs | Yes |
+| `config.product_review_app` | string | Selected product review app name | No |
+| `config.swatch_app` | string | Selected swatch app name | No |
+
+# css.liquid
+The css.liquid file manages all styling for the recommendation sections. It uses Liquid templating to generate dynamic CSS based on your section's settings and configuration.
+
+### Structure and Organization
+The CSS is organized by components and breakpoints:
+- Base styles for mobile-first approach
+- Tablet styles (min-width: 768px)
+- Desktop styles (min-width: 1024px)
+
+### CSS Class Reference
+
+| Class Name | Purpose | Properties Controlled | Example Usage |
+|------------|---------|---------------------|---------------|
+| `._gai-grid` | Main product grid container | - Grid layout (`grid-template-columns`)<br />- Gap between items<br />- Responsive columns | Controls overall product grid layout |
+| `._gai-sec-tit` | Section title styling | - Font size<br />- Text alignment<br />- Line clamping<br />- Display properties | Main section heading appearance |
+| `._gai-prod-card` | Individual product card | - Background color<br />- Font family<br />- Layout structure | Container for each product |
+| `._gai-prod-img` | Product image container | - Aspect ratio<br />- Object-fit<br />- Width/height | Product image display |
+| `._gai-prod-tit` | Product title | - Font size<br />- Line clamping<br />- Text alignment<br />- Font weight | Product name styling |
+| `._gai-prod-vndr` | Vendor name | - Font size<br />- Display properties<br />- Position | Brand/vendor name display |
+| `._gai-prod-prc` | Product price | - Color<br />- Font family<br />- Font size | Main price display |
+| `._gai-prod-prc--original` | Compare-at price | - Color<br />- Display<br />- Text decoration | Original/compare price styling |
+| `._gai-atc-btn` | Add to cart button | - Background color<br />- Text color<br />- Border radius<br />- Hover states | Add to cart button styling |
+| `._gai-dis-cnt` | Discount container | - Justification<br />- Background<br />- Display properties | Discount information wrapper |
+| `._gai-dis-txt` | Discount text | - Color<br />- Font size<br />- Text alignment | Discount amount/percentage text |
+| `._gai-dis` | Discount badge | - Background color<br />- Text color<br />- Opacity<br />- Position | Discount label styling |
+
+### Label Classes
+Special classes for product status and badges:
+
+| Class Name | Purpose | Customizable Properties |
+|------------|---------|------------------------|
+| `._gai-oos` | Out of stock badge | Background/text colors |
+| `._gai-bestseller` | Bestseller badge | Background/text colors |
+| `._gai-new` | New product badge | Background/text colors |
+| `._gai-trending` | Trending item badge | Background/text colors |
+
+### Responsive Behavior
+The file includes media queries for different screen sizes:
+```css
+/* Mobile (default) */
+[data-gai-section-id="{{ section_id }}"] ._gai-grid {
+  grid-template-columns: repeat({{- settings.breakpoints.small.cards_per_view -}}, 1fr);
+  gap: {{ settings.breakpoints.small.gutter }}px;
+}
+
+/* Tablet */
+@media (min-width: {{ settings.breakpoints.medium.screen_size }}px) {
+  /* Tablet-specific styles */
+}
+
+/* Desktop */
+@media (min-width: {{ settings.breakpoints.large.screen_size }}px) {
+  /* Desktop-specific styles */
+}
+```
+
+## theme.js
+The theme.js file is the core JavaScript file that makes your recommendation sections interactive. It exports an object with methods that handle various section behaviors and data transformations.
+
+### Core Methods
+
+| Method Name | Parameters | Description | Return | Required |
+|-------------|------------|-------------|---------|----------|
+| `initSwiper` | `(Swiper, templateSettings, container, params, defaultSettings, utils)` | Initializes carousel functionality | `Swiper instance` | Yes |
+| `onSectionInit` | `(args, cb, gloodUtils)` | Called when section initializes | `void` | Yes |
+| `onSectionRenderComplete` | `(args, utils)` | Called after section rendering completes | `void` | Yes |
+| `onVariantChange` | `(args, utils)` | Handles variant selection changes | `void` | Yes |
+| `onSwatchChange` | `(args, utils)` | Handles swatch selection changes | `void` | Yes |
+| `validateCartOperation` | `(payload, recommendation, utils, gloodUtils)` | Validates cart operations before execution | `{payload, error, href}` | Yes |
+| `onCartOperationComplete` | `(args, utils, gloodUtils)` | Called after cart operation completes | `void` | Yes |
+| `onProductDataReceived` | `(args, utils)` | Handles incoming product data | `void` | Yes |
+| `getProductDetailsQuery` | `(recommendation, glood)` | Returns GraphQL query for product details | `string` | Yes |
+| `transformProductData` | `(product, recommendation)` | Transforms raw product data into required format | `object` | Yes |
+
+### Event System
+
+| Event Name | Parameters | Description | Example Usage |
+|------------|------------|-------------|---------------|
+| `variantChange` | `{productId, variantId, options}` | Triggered when variant is selected | Update prices, images |
+| `addToCart` | `{variantId, quantity}` | Triggered when adding to cart | Show cart feedback |
+| `imageHover` | `{productId, imageUrl, index}` | Triggered on image hover | Switch product image |
+| `imageReset` | `{productId}` | Triggered when hover ends | Reset to main image |
+| `carouselChange` | `{index}` | Triggered on slide change | Update navigation |
+| `carouselEnd` | `{}` | Triggered at last slide | Load more items |
+
+### Swiper Configuration
+The `initSwiper` method handles carousel setup with these parameters:
+
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `templateSettings` | object | Section template settings | `{carousel: {}, breakpoints: {}}` |
+| `container` | HTMLElement | Carousel container element | `document.querySelector('._gai-crz-cnt')` |
+| `breakpoints` | object | Responsive breakpoint settings | `{768: {slidesPerView: 3}}` |
+| `swiperConfig` | object | Swiper library configuration | `{loop: true, pagination: {}}` |
+
+### Product Data Structure
+The `transformProductData` method transforms product data into this structure:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `featuredImage` | object | `{ src: string }` Main product image |
+| `handle` | string | Product URL handle |
+| `id` | number | Product ID (parsed from Shopify GID) |
+| `title` | string | Product title |
+| `vendor` | string | Product vendor name |
+| `images` | array | Array of `{ src: string }` objects |
+| `variants` | array | Array of variant objects |
+| `available` | boolean | Overall product availability |
+| `compareAtPrice` | string | Minimum compare-at price |
+| `price` | string | Minimum regular price |
+| `variantsCount` | number | Total number of variants |
+| `tags` | array | Product tags |
+| `availableForSale` | boolean | Whether product can be purchased |
+| `options` | array | Product options configuration |
+
+### Variant Data Structure
+Each variant in the variants array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Variant ID (parsed from Shopify GID) |
+| `compareAtPrice` | string | Original price (if discounted) |
+| `price` | string | Current price |
+| `image` | object | `{ src: string }` Variant-specific image |
+| `currentlyNotInStock` | boolean | Stock status |
+| `title` | string | Variant title |
+| `quantityAvailable` | number | Available quantity |
+| `availableForSale` | boolean | Purchasability status |
+| `selectedOptions` | array | Selected variant options |
+
+### GraphQL Query Fields
+The `getProductDetailsQuery` method requests these fields:
+
+| Field | Subfields | Description |
+|-------|-----------|-------------|
+| `featuredImage` | `url` | Main product image |
+| `handle` | - | Product URL handle |
+| `id` | - | Product identifier |
+| `title` | - | Product name |
+| `availableForSale` | - | Product availability |
+| `priceRange` | `minVariantPrice` | Price information |
+| `compareAtPriceRange` | `minVariantPrice` | Compare-at prices |
+| `options` | `name, optionValues` | Product options |
+| `variants` | Multiple fields | Complete variant data |
+| `images` | `url` | Product images |
+| `vendor` | - | Vendor name |
+| `variantsCount` | `count` | Number of variants |
+| `tags` | - | Product tags |

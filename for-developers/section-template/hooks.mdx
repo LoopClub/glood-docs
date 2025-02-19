@@ -1,385 +1,304 @@
 ---
 title: 'Hooks'
-description: 'Learn about available hooks for extending section template functionality'
+description: 'Complete guide to hooks in Glood.AI section templates'
 ---
 
-# Section Template Hooks
+# Template Hooks
 
-Hooks in Glood.AI section templates allow you to extend and customize the behavior of your recommendation sections at specific points in their lifecycle.
+## 1. Hook Lifecycle Flow
 
-## Available Hooks
-
-### Lifecycle Hooks
-
-#### initSection
-Initializes the section and sets up the initial state.
-
-**Parameters:**
-- `args` (Object):
-  - `recommendation` (Object): Section recommendation data
-  - `engine` (Object): Recommendation engine instance
-  - `initEnginePayload` (Object): Initial payload data
-- `cb` (Function): Callback function to execute after initialization
-- `gloodUtils` (Object): Glood utility functions
-
-**Returns:**
-- Void (calls callback with initialization result)
-
-**Example:**
-```javascript
-initSection: (args, cb, gloodUtils) => {
-  const { recommendation, engine, initEnginePayload } = args;
-  // Custom initialization logic
-  const customData = setupCustomFeatures(recommendation);
-  
-  cb({
-    recommendation,
-    engine,
-    initEnginePayload,
-    customData
-  });
-}
-```
-
-#### afterSectionRendered
-Called after the section has been rendered to the DOM.
-
-**Parameters:**
-- `args` (Object):
-  - `section` (Object): Section data
-  - `container` (HTMLElement): Section container element
-- `utils` (Object): Utility functions
-
-**Returns:**
-- Void
-
-**Example:**
-```javascript
-afterSectionRendered: (args, utils) => {
-  const { section, container } = args;
-  // Post-render setup
-  initializeCustomAnimations(container);
-  setupEventListeners(section);
-}
-```
-
-#### postProductFetch
-Called after products have been fetched, allowing for data transformation.
-
-**Parameters:**
-- `args` (Object):
-  - `products` (Array): Fetched product data
-  - `recommendation` (Object): Section recommendation data
-- `utils` (Object): Utility functions
-
-**Returns:**
-- Modified products array (optional)
-
-**Example:**
-```javascript
-postProductFetch: (args, utils) => {
-  const { products, recommendation } = args;
-  return products.map(product => ({
-    ...product,
-    customField: computeCustomValue(product)
-  }));
-}
-```
-
-### Product Hooks
-
-#### beforeAddToCart
-Called before a product is added to the cart, allowing for validation and modification.
-
-**Parameters:**
-- `payload` (Object): Cart addition payload
-  - `items` (Array): Products to add
-  - `attributes` (Object): Cart attributes
-- `recommendation` (Object): Section recommendation data
-- `utils` (Object): Utility functions
-- `gloodUtils` (Object): Glood utility functions
-
-**Returns:**
-- Promise resolving to:
-  - `payload` (Object): Modified cart payload
-  - `error` (null|Error): Error object if validation fails
-  - `href` (boolean|string): Redirect URL or false
-
-**Example:**
-```javascript
-beforeAddToCart: async (payload, recommendation, utils, gloodUtils) => {
-  try {
-    const validatedPayload = await validateProducts(payload.items);
-    return {
-      payload: validatedPayload,
-      error: null,
-      href: false
-    };
-  } catch (error) {
-    return {
-      payload,
-      error: new Error('Validation failed'),
-      href: '/cart'
-    };
-  }
-}
-```
-
-#### afterAddToCart
-Called after a product has been successfully added to the cart.
-
-**Parameters:**
-- `args` (Object):
-  - `product` (Object): Added product data
-  - `cartData` (Object): Updated cart data
-- `utils` (Object): Utility functions
-- `gloodUtils` (Object): Glood utility functions
-
-**Returns:**
-- Void
-
-**Example:**
-```javascript
-afterAddToCart: (args, utils, gloodUtils) => {
-  const { product, cartData } = args;
-  showAddToCartNotification(product);
-  updateCartCounter(cartData.totalItems);
-}
-```
-
-#### onVariantChange
-Called when a product variant is selected.
-
-**Parameters:**
-- `args` (Object):
-  - `variant` (Object): Selected variant data
-  - `product` (Object): Parent product data
-- `utils` (Object): Utility functions
-
-**Returns:**
-- Void
-
-**Example:**
-```javascript
-onVariantChange: (args, utils) => {
-  const { variant, product } = args;
-  updatePriceDisplay(variant.price);
-  updateAvailabilityStatus(variant.available);
-}
-```
-
-#### onSwatchChange
-Called when a product swatch (color/material) is selected.
-
-**Parameters:**
-- `args` (Object):
-  - `swatch` (Object): Selected swatch data
-  - `product` (Object): Parent product data
-- `utils` (Object): Utility functions
-
-**Returns:**
-- Void
-
-**Example:**
-```javascript
-onSwatchChange: (args, utils) => {
-  const { swatch, product } = args;
-  updateProductImage(swatch.imageUrl);
-  highlightSelectedSwatch(swatch.id);
-}
-```
-
-### Data Hooks
-
-#### getProductFetchQuery
-Defines the GraphQL query for fetching product data.
-
-**Parameters:**
-- `recommendation` (Object): Section recommendation data
-- `glood` (Object): Glood instance
-
-**Returns:**
-- String: GraphQL query
-
-**Example:**
-```javascript
-getProductFetchQuery: (recommendation, glood) => {
-  return `
-    query ProductData($id: ID!) {
-      product(id: $id) {
-        title
-        handle
-        variants(first: 250) {
-          nodes {
-            id
-            price
-            available
-          }
-        }
-      }
-    }
-  `;
-}
-```
-
-#### mutateProductData
-Transforms fetched product data before rendering.
-
-**Parameters:**
-- `product` (Object): Raw product data
-- `recommendation` (Object): Section recommendation data
-
-**Returns:**
-- Object: Transformed product data
-
-**Example:**
-```javascript
-mutateProductData: (product, recommendation) => {
-  return {
-    id: parseInt(product.id.replace('gid://shopify/Product/', '')),
-    title: product.title,
-    price: product.priceRange.minVariantPrice.amount,
-    images: product.images.nodes.map(image => ({
-      src: image.url
-    })),
-    variants: transformVariants(product.variants)
-  };
-}
-```
-
-### Carousel Hooks
-
-#### initSwiper
-Initializes the Swiper carousel with custom configuration.
-
-**Parameters:**
-- `Swiper` (Class): Swiper constructor
-- `templateSettings` (Object): Template configuration
-- `container` (HTMLElement): Carousel container
-- `params` (Object): Initialization parameters
-- `defaultSettings` (Object): Default Swiper settings
-- `utils` (Object): Utility functions
-
-**Returns:**
-- Swiper: Initialized Swiper instance
-
-**Example:**
-```javascript
-initSwiper: (Swiper, templateSettings, container, params, defaultSettings, utils) => {
-  const carouselContainer = container.querySelector('._gai-crz-cnt');
-  const settings = templateSettings?.carousel?.swiperConfig || {};
-  
-  const swiper = new Swiper(carouselContainer, {
-    ...defaultSettings,
-    ...settings,
-    breakpoints: {
-      320: {
-        slidesPerView: 2,
-        spaceBetween: 10
-      },
-      768: {
-        slidesPerView: 3,
-        spaceBetween: 20
-      },
-      1024: {
-        slidesPerView: 4,
-        spaceBetween: 30
-      }
-    }
-  });
-  
-  return swiper;
-}
-```
-
-## Best Practices
-
-1. Always return required data from hooks
-2. Handle errors appropriately in async hooks
-3. Keep transformations efficient
-4. Clean up resources in lifecycle hooks
-5. Use provided utility functions when available
-6. Test hooks with various data scenarios
-7. Document custom implementations
-
-## Hook Lifecycle Flow
-
-### 1. Section Initialization Phase
-- `initSection` is called when the section is first created
-  - Sets up initial state
+### Section Initialization Phase
+- `initSection` is called when section is first created
+  - Sets up initial state and variables
   - Configures section parameters
   - Initializes custom features
   - Prepares recommendation engine
+  - Registers event listeners
 
-### 2. Data Fetching Phase
-- `getProductFetchQuery` is called to prepare the GraphQL query
+### Data Fetching Phase
+- `getProductFetchQuery` is called to prepare GraphQL query
   - Defines required product fields
   - Sets up query variables
-  - Configures any custom data requirements
+  - Configures custom data requirements
+  - Handles pagination if needed
+  - Sets up filtering parameters
 
-### 3. Data Processing Phase
-- `postProductFetch` processes the raw product data
+### Data Processing Phase
+- `postProductFetch` processes raw product data
   - Filters products if needed
   - Adds computed properties
   - Transforms data structure
-- `mutateProductData` transforms individual product data
+  - Handles currency formatting
+  - Prepares variant data
+- `transformProductData` transforms individual product data
   - Normalizes data format
   - Adds custom fields
   - Prepares for rendering
+  - Handles translations
+  - Sets up tracking data
 
-### 4. Rendering Phase
+### Rendering Phase
 - `afterSectionRendered` is called once DOM is ready
   - Sets up DOM event listeners
   - Initializes UI components
   - Triggers animations
+  - Sets up lazy loading
+  - Handles responsive behavior
 - `initSwiper` (if carousel is enabled)
   - Configures carousel settings
   - Sets up navigation
   - Initializes responsive behavior
+  - Sets up pagination
+  - Configures autoplay
 
-### 5. Interaction Phase
-These hooks are called in response to user actions:
-- `onVariantChange`
+### Interaction Phase
+- `onVariantChange` handles variant selection
   - Updates product options
   - Refreshes pricing
   - Updates availability
-- `onSwatchChange`
+  - Updates images
+  - Handles inventory status
+- `onSwatchChange` handles swatch interactions
   - Updates product images
   - Refreshes variant selection
   - Updates UI state
+  - Handles color mapping
+  - Updates availability
 
-### 6. Cart Operation Phase
-- `beforeAddToCart`
+### Cart Operation Phase
+- `beforeAddToCart` validates cart operations
   - Validates product selection
   - Checks inventory
-  - Modifies cart payload if needed
-- `afterAddToCart`
+  - Modifies cart payload
+  - Handles quantity validation
+  - Prepares tracking data
+- `afterAddToCart` handles post-cart updates
   - Updates UI
   - Shows notifications
   - Refreshes cart state
+  - Updates inventory
+  - Triggers analytics
 
-### 7. Cleanup Phase
-When section is removed or updated:
-- Clean up event listeners
-- Remove custom elements
-- Reset state if needed
+### Cleanup Phase
+- Cleanup operations when section is removed/updated
+  - Remove event listeners
+  - Clear custom elements
+  - Reset state if needed
+  - Clear timers/intervals
+  - Free up resources
 
-## Hook Dependencies
+## 2. Available Hooks
 
-Some hooks depend on data from previous hooks:
-- `mutateProductData` needs data from `getProductFetchQuery`
-- `afterSectionRendered` needs the processed data from `mutateProductData`
-- Cart operations need variant data from `onVariantChange`
+### initSection
+**Description:**  
+Primary initialization hook called when a section is first created.
 
-## Error Handling
+**Parameters:**  
+- `args` (Object):
+  - `recommendation` (Object): Section configuration
+  - `engine` (Object): Recommendation engine instance
+  - `initEnginePayload` (Object): Initial engine data
+- `cb` (Function): Callback function
+- `gloodUtils` (Object): Utility functions
 
-Each phase should handle errors appropriately:
-1. Initialization errors: Fall back to default configuration
-2. Data fetching errors: Show error state or fallback content
-3. Processing errors: Log error and maintain data integrity
-4. Rendering errors: Gracefully degrade functionality
-5. Interaction errors: Show user feedback and maintain state
+**Returns:**  
+void
 
-## Support
+**Example:**
+```javascript
+initSection: (args, cb, gloodUtils) => {
+    const { recommendation, engine } = args;
+    setupSection(recommendation);
+    cb();
+}
+```
 
-For questions about hooks or custom hook development, contact our support team at support@glood.ai 
+**Use Cases:**
+- Section configuration
+- State initialization
+- Event listener setup
+- Feature initialization
+- Engine configuration
+
+### getProductFetchQuery
+**Description:**  
+Builds the GraphQL query for fetching product data.
+
+**Parameters:**  
+- `recommendation` (Object): Section configuration
+- `glood` (Object): Global store configuration
+
+**Returns:**  
+String - GraphQL query
+
+**Example:**
+```javascript
+getProductFetchQuery: (recommendation, glood) => {
+    return `
+        query ProductData($id: ID!) {
+            product(id: $id) {
+                title
+                handle
+                variants(first: 250) {
+                    nodes {
+                        id
+                        price
+                        available
+                    }
+                }
+            }
+        }
+    `;
+}
+```
+
+**Use Cases:**
+- Product data fetching
+- Field selection
+- Query customization
+- Data filtering
+- Performance optimization
+
+### postProductFetch
+**Description:**  
+Processes raw product data after fetching. Allows for data transformation and enrichment before rendering.
+
+**Parameters:**  
+- `args` (Object):
+  - `products` (Array): Raw product data array
+  - `recommendation` (Object): Section configuration
+  - `template` (Object): Template settings
+- `utils` (Object): Helper functions
+
+**Returns:**  
+Array - Processed product data
+
+**Example:**
+```javascript
+postProductFetch: (args, utils) => {
+    const { products, recommendation, template } = args;
+    return products.map(product => ({
+        ...product,
+        formattedPrice: utils.formatMoney(product.price),
+        hasDiscount: product.compare_at_price > product.price,
+        isAvailable: product.variants.nodes[0].availableForSale,
+        imageUrl: utils.optimizeImage(product.featured_image, template.settings)
+    }));
+}
+```
+
+**Use Cases:**
+- Price formatting
+- Discount calculations
+- Image optimization
+- Availability checks
+- Data enrichment
+
+### transformProductData
+**Description:**  
+Transforms individual product data before rendering. Last chance to modify product data.
+
+**Parameters:**  
+- `product` (Object): Single product data
+- `recommendation` (Object): Section configuration
+- `utils` (Object): Helper functions
+
+**Returns:**  
+Object - Modified product data
+
+**Example:**
+```javascript
+transformProductData: (product, recommendation, utils) => {
+    return {
+        ...product,
+        trackingData: utils.generateTrackingData(product, recommendation),
+        variants: product.variants.map(variant => ({
+            ...variant,
+            formattedPrice: utils.formatMoney(variant.price),
+            isAvailable: variant.inventory_quantity > 0
+        })),
+        labels: utils.generateProductLabels(product, recommendation.settings)
+    };
+}
+```
+
+**Use Cases:**
+- Tracking setup
+- Variant processing
+- Label generation
+- Price formatting
+- Custom field addition
+
+### afterSectionRendered
+**Description:**  
+Called after section DOM is ready. Perfect for initializing UI components and interactions.
+
+**Parameters:**  
+- `args` (Object):
+  - `container` (HTMLElement): Section container
+  - `recommendation` (Object): Section configuration
+  - `products` (Array): Processed products
+- `utils` (Object): Helper functions
+
+**Returns:**  
+void
+
+**Example:**
+```javascript
+afterSectionRendered: (args, utils) => {
+    const { container, recommendation, products } = args;
+    
+    // Initialize carousel if needed
+    if (recommendation.layout === 'carousel') {
+        initCarousel(container, recommendation.settings.carousel);
+    }
+    
+    // Set up lazy loading
+    utils.setupLazyLoading(container);
+    
+    // Initialize product cards
+    products.forEach(product => {
+        initializeProductCard(container, product);
+    });
+    
+    // Set up observers
+    setupIntersectionObserver(container);
+}
+```
+
+**Use Cases:**
+- Carousel initialization
+- Lazy loading setup
+- Event binding
+- Animation setup
+- Observer initialization
+
+## 3. Hook Dependencies
+
+### Required Utils
+- `formatMoney`: Price formatting
+- `getVariantById`: Variant lookup
+- `updateUrl`: URL manipulation
+- `merge`: Object merging
+- `imageOptimizer`: Image optimization
+
+### Global Context
+- `glood`: Store configuration
+- `translations`: Text strings
+- `template`: Template settings
+- `section`: Section configuration
+- `utils`: Common utilities
+
+### Hook Flow Dependencies
+- `transformProductData` needs data from `getProductFetchQuery`
+- `afterSectionRendered` needs data from `transformProductData`
+- Cart operations need data from `onVariantChange`
+- Swiper needs container from `afterSectionRendered`
+
+### Error Handling
+Each hook should handle errors appropriately:
+1. Initialization errors: Use default configuration
+2. Data fetching errors: Show fallback content
+3. Processing errors: Maintain data integrity
+4. Rendering errors: Graceful degradation
+5. Interaction errors: User feedback 
