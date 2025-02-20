@@ -5,7 +5,7 @@ description: 'Learn about the core components of a section template'
 
 # Template Code
 
-Every section template in Glood.AI consists of several core files that work together to create a complete recommendation section. We use the [liquidJS](https://liquidjs.com/) library to render Liquid code at the client side. For any queries regarding Liquid-specific data structures, filters, or tags, please refer to the [Shopify Liquid documentation](https://shopify.dev/docs/api/liquid/objects).
+Every section template in Glood.AI consists of several core files that work together to create a complete recommendation section. We use the [liquidJS](https://liquidjs.com/api/classes/Liquid.html) library to render Liquid code at the client side. For any queries regarding Liquid-specific data structures, filters, or tags, please refer to the [Shopify Liquid documentation](https://shopify.dev/docs/api/liquid/objects).
 
 ## Core Parts
 
@@ -22,31 +22,39 @@ The main template that defines the HTML structure and dynamic content rendering.
 #### Liquid Filters
 Special filters used in the template:
 
-| Filter | Purpose | Input | Output | Example |
-|--------|---------|-------|--------|---------|
-| `money` | Price formatting | Number/String | Formatted price | `19.99 \| money` → `"$19.99"` |
-| `optimize_image` | Image optimization | URL | Optimized URL | Adds size and format parameters |
-| `tracking_url` | Add tracking | Product | URL with params | Adds section reference |
-| `section_discount` | Format discount | Section | Discount string | Formats based on locale |
+| Filter | Purpose | Parameters | Input | Output | Example |
+|--------|---------|------------|-------|--------|---------|
+| `money` | Price formatting | `money_format` (optional): Override default format | Number/String | Formatted price | `19.99 \| money` → `"$19.99"` |
+| `optimize_image` | Image optimization | - `width` (optional): Desired width<br />- `height` (optional): Desired height<br />- `crop` (optional): Crop mode | URL | Optimized URL | `product.image \| optimize_image: width: 300, height: 300` |
+| `tracking_url` | Add tracking | - `section` (required): Section context<br />- `ref_product_id` (optional): Reference product ID | Product | URL with params | `product \| tracking_url: section` |
+| `section_discount` | Format discount | - `money_format` (optional): Price format<br />- `locale` (optional): Language code | Section | Discount string | `section \| section_discount: money_format: shop.money_format` |
 
-#### Conditional Display Logic
-Elements that show/hide based on conditions:
+### 2. JS Hooks
 
-| Element | Condition | Purpose |
-|---------|-----------|---------|
-| `._gai-sec-head` | `section.layout != 'amazon_bought_together'` | Section header |
-| `._gai-oos` | `product.available == false` | Out of stock badge |
-| `._gai-dis-cnt` | `section_discount_str.length > 0` | Discount container |
-| `._gai-qnt-cnt` | `template.settings.product_card.show_quantity_selector` | Quantity selector |
+The JavaScript hooks system provides a powerful way to customize and extend section behavior. These hooks are called at specific points in the section's lifecycle, allowing you to implement custom functionality and handle various events.
 
-### 2. theme.js
+#### Core callBacks available
 
-The theme.js file manages all client-side functionality. It implements methods to handle section behavior and data transformation.
+| Method Name | Parameters | Description | Return | Default Value |
+|-------------|------------|-------------|---------|---------------|
+| `initSwiper` | `(Swiper, templateSettings, container, params, defaultSettings, utils)` | Initializes carousel functionality | `Swiper instance` | null |
+| `onSectionInit` | `(args, cb, gloodUtils)` | Called when section initializes | `void` | null |
+| `onSectionRenderComplete` | `(args, utils)` | Called after section rendering | `void` | null |
+| `onVariantChange` | `(args, utils)` | Handles variant selection | `void` | null |
+| `onSwatchChange` | `(args, utils)` | Handles swatch selection | `void` | null |
+| `validateCartOperation` | `(payload, recommendation, utils)` | Validates cart operations | `{payload, error}` | null |
+| `onCartOperationComplete` | `(args, utils)` | Called after cart operation | `void` | null |
+| `onProductDataReceived` | `(args, utils)` | Handles product data | `void` | null |
+| `getProductDetailsQuery` | `(recommendation, glood)` | Returns GraphQL query | `string` | "" |
+| `transformProductData` | `(product, recommendation)` | Transforms product data | `object` | {} |
+| `onSectionRendered` | `(section, products)` | Fired when section is fully rendered | `void` | null |
+| `onProductClick` | `(section, products, productId)` | Fired when product is clicked | `void` | null |
+| `onAddToCart` | `(section, products, items, response)` | Fired on successful cart addition | `void` | null |
+| `onVariantSelected` | `(section, products, productId, variantId)` | Fired when variant is selected | `void` | null |
 
-#### Core Methods Implementation
-
+#### Example Implementation
 ```javascript
-// Example: Initializing Swiper
+// Example: Carousel Initialization Hook
 initSwiper: (Swiper, templateSettings, container, params) => {
     const carouselContainer = container.querySelector('._gai-crz-cnt');
     if (!carouselContainer) return;
@@ -57,39 +65,74 @@ initSwiper: (Swiper, templateSettings, container, params) => {
     });
 }
 
-// Example: Handling Variant Changes
-  onVariantChange: (args, utils) => {
+// Example: Variant Change Hook
+onVariantChange: (args, utils) => {
     const { variant, product, container } = args;
     const priceElement = container.querySelector('._gai-prod-prc');
     if (priceElement && variant.price) {
         priceElement.textContent = utils.formatMoney(variant.price);
-  }
+    }
 }
 ```
 
-For complete method definitions and parameters, see [Core Methods](/for-developers/section-template/schemas#core-methods).
+### 3. CSS Template
 
-#### GraphQL Implementation
-The `getProductDetailsQuery` method builds queries using fields defined in [GraphQL Query Fields](/for-developers/section-template/schemas#graphql-query-fields).
+The CSS template system provides a flexible way to style your recommendation sections. It uses Liquid templating for dynamic styling based on section settings and configuration. Both section template and CSS template have access to the same template object. For a complete reference of available objects and their structure, see [Template Objects](/for-developers/section-template/schemas#object-definitions).
 
-#### Data Transformation
-The `transformProductData` method converts GraphQL responses to the structure defined in [Product Data Structure](/for-developers/section-template/schemas#product-data-structure).
+#### Structure and Organization
+The CSS is organized by components and breakpoints:
+- Base styles for mobile-first approach
+- Tablet styles (min-width: 768px)
+- Desktop styles (min-width: 1024px)
 
-### 3. css.liquid
+**NOTE:** These breakpoint values are customizable through the template settings. For detailed configuration options, see [`settings.breakpoints[].screenSize`](/for-developers/section-template/schemas#template-object) in the Template Object documentation.
 
-Implements responsive styling using [template settings](/for-developers/section-template/schemas#template-object). Both section template and CSS template have access to the same template object. For a complete reference of available objects and their structure, see [Template Objects](/for-developers/section-template/schemas#object-definitions).
+#### CSS Class Reference
 
+| Class Name | Purpose | Properties Controlled | Example Usage |
+|------------|---------|---------------------|---------------|
+| `._gai-grid` | Main product grid container | - Grid layout (`grid-template-columns`)<br />- Gap between items<br />- Responsive columns | Controls overall product grid layout |
+| `._gai-sec-tit` | Section title styling | - Font size<br />- Text alignment<br />- Line clamping<br />- Display properties | Main section heading appearance |
+| `._gai-prod-card` | Individual product card | - Background color<br />- Font family<br />- Layout structure | Container for each product |
+| `._gai-prod-img` | Product image container | - Aspect ratio<br />- Object-fit<br />- Width/height | Product image display |
+| `._gai-prod-tit` | Product title | - Font size<br />- Line clamping<br />- Text alignment<br />- Font weight | Product name styling |
+| `._gai-prod-vndr` | Vendor name | - Font size<br />- Display properties<br />- Position | Brand/vendor name display |
+| `._gai-prod-prc` | Product price | - Color<br />- Font family<br />- Font size | Main price display |
+| `._gai-prod-prc--original` | Compare-at price | - Color<br />- Display<br />- Text decoration | Original/compare price styling |
+| `._gai-atc-btn` | Add to cart button | - Background color<br />- Text color<br />- Border radius<br />- Hover states | Add to cart button styling |
+| `._gai-dis-cnt` | Discount container | - Justification<br />- Background<br />- Display properties | Discount information wrapper |
+| `._gai-dis-txt` | Discount text | - Color<br />- Font size<br />- Text alignment | Discount amount/percentage text |
+| `._gai-dis` | Discount badge | - Background color<br />- Text color<br />- Opacity<br />- Position | Discount label styling |
+
+#### Label Classes
+Special classes for product status and badges:
+
+| Class Name | Purpose | Customizable Properties |
+|------------|---------|------------------------|
+| `._gai-oos` | Out of stock badge | Background/text colors |
+| `._gai-bestseller` | Bestseller badge | Background/text colors |
+| `._gai-new` | New product badge | Background/text colors |
+| `._gai-trending` | Trending item badge | Background/text colors |
+
+#### Responsive Behavior
+The file includes media queries for different screen sizes:
 ```scss
-// Example: Responsive grid implementation
-._gai-grid {
-    display: grid;
-    grid-template-columns: repeat({{ settings.breakpoints.small.cards_per_view }}, 1fr);
-    gap: {{ settings.breakpoints.small.gutter }}px;
+/* Mobile (default) */
+[data-gai-section-id="{{ section_id }}"] ._gai-grid {
+  grid-template-columns: repeat({{- settings.breakpoints.small.cards_per_view -}}, 1fr);
+  gap: {{ settings.breakpoints.small.gutter }}px;
+}
+
+/* Tablet */
+@media (min-width: {{ settings.breakpoints.medium.screen_size }}px) {
+  /* Tablet-specific styles */
+}
+
+/* Desktop */
+@media (min-width: {{ settings.breakpoints.large.screen_size }}px) {
+  /* Desktop-specific styles */
 }
 ```
-
-For complete CSS class reference, see [CSS Class Reference](/for-developers/section-template/schemas#css-class-reference).
-
 
 ## Support
 

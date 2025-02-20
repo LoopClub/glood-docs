@@ -5,9 +5,9 @@ description: 'Complete guide to hooks in Glood.AI section templates'
 
 # Template Hooks
 
-## 1. Hook Lifecycle Flow
+## Hook Lifecycle Flow
 
-### Section Initialization Phase
+### 1. Section Initialization Phase
 - `initSection` is called when section is first created
   - Sets up initial state and variables
   - Configures section parameters
@@ -15,7 +15,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Prepares recommendation engine
   - Registers event listeners
 
-### Data Fetching Phase
+### 2. Data Fetching Phase
 - `getProductFetchQuery` is called to prepare GraphQL query
   - Defines required product fields
   - Sets up query variables
@@ -23,7 +23,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Handles pagination if needed
   - Sets up filtering parameters
 
-### Data Processing Phase
+### 3. Data Processing Phase
 - `postProductFetch` processes raw product data
   - Filters products if needed
   - Adds computed properties
@@ -37,7 +37,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Handles translations
   - Sets up tracking data
 
-### Rendering Phase
+### 4. Rendering Phase
 - `afterSectionRendered` is called once DOM is ready
   - Sets up DOM event listeners
   - Initializes UI components
@@ -51,7 +51,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Sets up pagination
   - Configures autoplay
 
-### Interaction Phase
+### 5. Interaction Phase
 - `onVariantChange` handles variant selection
   - Updates product options
   - Refreshes pricing
@@ -65,7 +65,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Handles color mapping
   - Updates availability
 
-### Cart Operation Phase
+### 6. Cart Operation Phase
 - `beforeAddToCart` validates cart operations
   - Validates product selection
   - Checks inventory
@@ -79,7 +79,7 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Updates inventory
   - Triggers analytics
 
-### Cleanup Phase
+### 7. Cleanup Phase
 - Cleanup operations when section is removed/updated
   - Remove event listeners
   - Clear custom elements
@@ -87,22 +87,34 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Clear timers/intervals
   - Free up resources
 
-## 2. Available Hooks
+## Available Hooks
 
-### initSection
-**Description:**  
+### 1. initSection
+**Purpose:**  
 Primary initialization hook called when a section is first created.
 
-**Parameters:**  
-- `args` (Object):
-  - `recommendation` (Object): Section configuration
-  - `engine` (Object): Recommendation engine instance
-  - `initEnginePayload` (Object): Initial engine data
-- `cb` (Function): Callback function
-- `gloodUtils` (Object): Utility functions
+**Parameters:**
 
-**Returns:**  
-void
+1. `args` contains:
+   - `recommendation` object which includes:
+     - [`section`](/for-developers/section-template/schemas#section-object) containing section ID, layout type, title, and discount configuration
+     - Array of [`products`](/for-developers/section-template/schemas#product-array) with product data
+   - `engine` object containing:
+     - Engine name and version
+     - Engine-specific configuration
+   - `initEnginePayload` containing engine initialization data
+
+2. `cb` (Callback Function):
+   - Receives the processed recommendation object
+   - Used to handle initialization completion
+   - No return value expected
+
+3. `gloodUtils` provides:
+   - `formatMoney`: For currency formatting
+   - `merge`: For deep object merging
+   - `generateTrackingData`: Creates tracking information
+   - `setupLazyLoading`: Handles image lazy loading
+   - Various other utility functions for common operations
 
 **Example:**
 ```javascript
@@ -120,16 +132,35 @@ initSection: (args, cb, gloodUtils) => {
 - Feature initialization
 - Engine configuration
 
-### getProductFetchQuery
-**Description:**  
+### 2. getProductFetchQuery
+**Purpose:**  
 Builds the GraphQL query for fetching product data.
 
-**Parameters:**  
-- `recommendation` (Object): Section configuration
-- `glood` (Object): Global store configuration
+**Parameters:**
+
+1. `recommendation` contains:
+   - [`section`](/for-developers/section-template/schemas#section-object) object with:
+     - `id` (String): Unique section identifier
+     - `layout` (String): Section layout type
+     - `discount_config` (Object): Discount settings
+     - `widget_message` (String): Custom message template
+   - `products` (Array): Currently loaded products
+   - `template` (Object): Template-specific settings
+
+2. `glood` provides:
+   - `shop` object containing:
+     - `money_format` (String): Store currency format
+     - `locale` (String): Store language code
+   - `product` object with:
+     - `id` (String): Current product context
+     - `handle` (String): Product URL handle
+   - `localization` settings for:
+     - Currency formatting
+     - Language preferences
+     - Regional settings
 
 **Returns:**  
-String - GraphQL query
+GraphQL query string containing required product fields
 
 **Example:**
 ```javascript
@@ -159,7 +190,7 @@ getProductFetchQuery: (recommendation, glood) => {
 - Data filtering
 - Performance optimization
 
-### postProductFetch
+### 3. postProductFetch
 **Description:**  
 Processes raw product data after fetching. Allows for data transformation and enrichment before rendering.
 
@@ -194,17 +225,48 @@ postProductFetch: (args, utils) => {
 - Availability checks
 - Data enrichment
 
-### transformProductData
-**Description:**  
-Transforms individual product data before rendering. Last chance to modify product data.
+### 4. transformProductData
+**Purpose:**  
+Transforms raw GraphQL product data into template-friendly format.
 
-**Parameters:**  
-- `product` (Object): Single product data
-- `recommendation` (Object): Section configuration
-- `utils` (Object): Helper functions
+**Parameters:**
+
+1. `product` (Raw GraphQL data) contains:
+   - Basic information:
+     - `id` (String): GraphQL product ID
+     - `handle` (String): Product URL handle
+     - `title` (String): Product title
+     - `vendor` (String): Product vendor
+   - Images:
+     - `featuredImage` (Object): Main product image
+     - `images` (Object): Additional product images
+   - Pricing:
+     - `priceRange` (Object): Min/max prices
+     - `compareAtPriceRange` (Object): Original prices
+   - Variants:
+     - `variants` (Object): Product variants data
+     - `variantsCount` (Object): Total variants count
+   - Options:
+     - `options` (Array): Product options
+     - `selectedOptions` (Array): Default selections
+   - Status:
+     - `availableForSale` (Boolean): Stock status
+     - `tags` (Array): Product tags
+
+2. `recommendation` provides:
+   - [`section`](/for-developers/section-template/schemas#section-object) settings:
+     - Display configuration
+     - Pricing rules
+     - Layout settings
+     - Tracking configuration
 
 **Returns:**  
-Object - Modified product data
+[`Product`](/for-developers/section-template/schemas#product-object) object containing:
+- Normalized product data
+- Formatted prices
+- Processed images
+- Structured variants
+- Computed fields
 
 **Example:**
 ```javascript
@@ -229,51 +291,236 @@ transformProductData: (product, recommendation, utils) => {
 - Price formatting
 - Custom field addition
 
-### afterSectionRendered
-**Description:**  
-Called after section DOM is ready. Perfect for initializing UI components and interactions.
+### 5. initSwiper
+**Purpose:**  
+Initializes and configures the carousel/slider functionality for sections using Swiper.js.
 
-**Parameters:**  
-- `args` (Object):
-  - `container` (HTMLElement): Section container
-  - `recommendation` (Object): Section configuration
-  - `products` (Array): Processed products
-- `utils` (Object): Helper functions
+**Parameters:**
+
+1. `Swiper` (Constructor Class):
+   - Swiper.js constructor
+   - Used to create carousel instances
+   - Handles slide functionality
+   - Manages touch events
+   - Controls navigation
+
+2. `templateSettings` contains:
+   - [`template.settings`](/for-developers/section-template/schemas#template-object) with:
+     - `carousel` (Object): Carousel-specific settings
+     - `breakpoints` (Object): Responsive configuration:
+       - `small` (Object): Mobile settings
+       - `medium` (Object): Tablet settings
+       - `large` (Object): Desktop settings
+     - Each breakpoint contains:
+       - `screenSize` (Number): Width breakpoint
+       - `cardsPerView` (Number): Visible slides
+       - `gutter` (Number): Space between slides
+
+3. `container` (HTMLElement):
+   - Root section element
+   - Contains carousel structure:
+     - Wrapper element
+     - Slide elements
+     - Navigation buttons
+     - Pagination dots
+
+4. `params` contains:
+   - [`recommendation`](/for-developers/section-template/schemas#recommendation-object):
+     - `section` (Object): Section configuration
+     - `products` (Array): Product data
+     - Layout settings
+   - Template-specific parameters
+
+5. `defaultSettings` contains:
+   - Default Swiper configuration:
+     - Navigation options
+     - Pagination settings
+     - Autoplay configuration
+     - Effect settings
+     - Loop behavior
+
+6. `utils` provides:
+   - `merge`: Deep object merging
+   - DOM manipulation helpers
+   - Event handling utilities
+   - Error handling functions
+
+**Returns:**  
+- `Swiper` instance if initialization succeeds
+- `undefined` if initialization fails
+
+**Example:**
+```javascript
+initSwiper: (Swiper, templateSettings, container, params, defaultSettings, utils) => {
+  const carouselContainer = container.querySelector('._gai-crz-cnt');
+  if (!carouselContainer) return;
+  
+  const settings = templateSettings?.carousel?.swiperConfig || {};
+  const swiperConfig = utils.merge(defaultSettings, settings);
+  const breakpoints = Object.values(templateSettings.breakpoints).reduce(
+    (acc, curr) => ({
+      ...acc,
+      [curr.screenSize]: {
+        slidesPerView: curr.cardsPerView,
+        spaceBetween: curr.gutter,
+      },
+    }),
+    {}
+  );
+  
+  return new Swiper(carouselContainer, utils.merge(swiperConfig, { breakpoints }));
+}
+```
+
+### 6. onVariantChange
+**Purpose:**  
+Handles product variant selection changes and updates the UI.
+
+**Parameters:**
+
+1. `args` contains:
+   - `variant` information:
+     - Basic details: ID, price, compare price
+     - Image information with source and alt text
+     - Availability status and quantity
+     - Selected options (color, size, etc.)
+   - Complete [`product`](/for-developers/section-template/schemas#product-object) data
+   - DOM container element for the product card
+
+2. `utils` provides:
+   - Price formatting functions
+   - Image update utilities
+   - Price display update functions
+   - Other UI manipulation helpers
+
+### 7. onSwatchChange
+**Purpose:**  
+Handles swatch selection events and updates product display accordingly.
+
+**Parameters:**
+
+1. `args` contains:
+   - `option` object with:
+     - `name` (String): Option name (e.g., "Color", "Size")
+     - `value` (String): Selected option value
+     - `type` (String): Swatch type (color/size/material)
+     - `swatchImage` (String, optional): Custom swatch image URL
+   - [`product`](/for-developers/section-template/schemas#product-object) object containing:
+     - `variants` (Array): All product variants
+     - `options` (Array): Available option types
+     - `selectedVariant` (Object): Currently selected variant
+     - `images` (Array): Product images
+   - `container` (HTMLElement): Product card DOM element
+
+2. `utils` provides:
+   - `updateSwatchUI`: Updates swatch selection state
+   - `findMatchingVariant`: Finds variant by options
+   - `updateProductImage`: Updates product image
+   - `updatePriceDisplay`: Updates price display
+   - Event tracking utilities
 
 **Returns:**  
 void
 
-**Example:**
-```javascript
-afterSectionRendered: (args, utils) => {
-    const { container, recommendation, products } = args;
-    
-    // Initialize carousel if needed
-    if (recommendation.layout === 'carousel') {
-        initCarousel(container, recommendation.settings.carousel);
-    }
-    
-    // Set up lazy loading
-    utils.setupLazyLoading(container);
-    
-    // Initialize product cards
-    products.forEach(product => {
-        initializeProductCard(container, product);
-    });
-    
-    // Set up observers
-    setupIntersectionObserver(container);
-}
-```
+### 8. onCartOperationComplete
+**Purpose:**  
+Handles post-cart operation tasks and updates UI accordingly.
 
-**Use Cases:**
-- Carousel initialization
-- Lazy loading setup
-- Event binding
-- Animation setup
-- Observer initialization
+**Parameters:**
 
-## 3. Hook Dependencies
+1. `args` contains:
+   - `operation` (String): Type of operation ('add'|'update'|'remove')
+   - `response` object with:
+     - `cart` (Object): Updated cart state
+     - `items` (Array): Modified cart items
+     - `total` (Number): New cart total
+     - `count` (Number): Updated item count
+   - [`section`](/for-developers/section-template/schemas#section-object) containing:
+     - Section configuration
+     - Template settings
+     - Tracking data
+   - `container` (HTMLElement): Section container
+
+2. `utils` provides:
+   - `updateCartUI`: Updates cart display
+   - `showNotification`: Displays notifications
+   - `updateInventory`: Updates stock status
+   - Animation utilities
+
+3. `gloodUtils` provides:
+   - `trackCartEvent`: Analytics tracking
+   - `formatCartData`: Data formatting
+   - `updateShopifyCart`: Cart sync utilities
+   - Store-specific helpers
+
+**Returns:**  
+void
+
+### 9. validateCartOperation
+**Purpose:**  
+Validates and potentially modifies cart operations before execution.
+
+**Parameters:**
+
+1. `payload` contains:
+   - Array of items being added/modified:
+     - Product identifier
+     - Variant identifier
+     - Quantity
+   - Additional cart-specific data
+
+2. `recommendation` provides:
+   - [`section`](/for-developers/section-template/schemas#section-object) configuration
+   - Product data
+   - Template settings
+
+3. `utils` and `gloodUtils`:
+   - Validation helpers
+   - Cart operation utilities
+   - Format and transformation functions
+
+**Returns:**
+- Modified payload if valid
+- Error message if validation fails
+- Optional redirect URL 
+
+### 10. onProductDataReceived
+**Purpose:**  
+Processes raw product data before transformation and rendering.
+
+**Parameters:**
+
+1. `args` contains:
+   - `products` array with raw product data:
+     - `id` (String): Product identifier
+     - `title` (String): Product title
+     - `handle` (String): Product URL handle
+     - `featuredImage` (Object): Main product image
+     - `variants` (Array): Raw variant data
+     - `options` (Array): Product options
+     - `tags` (Array): Product tags
+   - [`section`](/for-developers/section-template/schemas#section-object) object with:
+     - Layout configuration
+     - Discount settings
+     - Template rules
+     - Display settings
+   - [`template`](/for-developers/section-template/schemas#template-object) containing:
+     - Breakpoint settings
+     - Card configuration
+     - Image dimensions
+     - Price display rules
+
+2. `utils` provides:
+   - `processImages`: Image optimization utilities
+   - `formatProductData`: Data formatting helpers
+   - `validateProducts`: Data validation functions
+   - `enrichProductData`: Data enrichment utilities
+   - `handleErrors`: Error handling functions
+
+**Returns:**  
+void 
+
+## Hook Dependencies
 
 ### Required Utils
 - `formatMoney`: Price formatting
@@ -302,3 +549,8 @@ Each hook should handle errors appropriately:
 3. Processing errors: Maintain data integrity
 4. Rendering errors: Graceful degradation
 5. Interaction errors: User feedback 
+
+
+## Support
+
+If you need help with creating or customizing section templates, contact our support team at support@glood.ai 

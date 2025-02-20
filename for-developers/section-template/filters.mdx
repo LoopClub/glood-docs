@@ -1,13 +1,15 @@
 ---
 title: 'Filters'
-description: 'Guide to filters used in Glood.AI templates'
+description: 'Reference for custom Liquid filters available in section templates'
 ---
 
-## 1. money
+
+## format_money
+
 **Description:**  
 Formats numeric values into the store's currency format based on the money_format setting from the glood object.
 
-**Parameters:**  
+**Parameters:**
 - `value` (Number/String): The numeric price value to be formatted
 - `money_format` (String, optional): Override default money format
 
@@ -16,8 +18,8 @@ String - Formatted price string with currency symbol
 
 **Example:**
 ```liquid
-{{ 19.99 | money }}  →  "$19.99"
-{{ product.price | money: money_format: shop.money_format }}  →  "$29.99"
+{{ 19.99 | format_money }}  →  "$19.99"
+{{ product.price | format_money: money_format: shop.money_format }}  →  "$29.99"
 ```
 
 **Use Cases:**
@@ -26,156 +28,254 @@ String - Formatted price string with currency symbol
 - Showing discount amounts
 - Bundle total prices
 
-## 2. optimize_image
-**Description:**  
-Optimizes and resizes images for better performance using Shopify's CDN parameters.
+## optimize_image
 
-**Parameters:**  
+**Description:**  
+Optimizes and resizes images for better performance using CDN parameters.
+
+**Parameters:**
 - `url` (String): The original image URL to be optimized
 - `width` (Number, optional): Desired image width
 - `height` (Number, optional): Desired image height
+- `crop` (String, optional): Crop mode for the image
 
 **Returns:**  
 String - Optimized image URL with CDN parameters
 
 **Example:**
 ```liquid
-{{ product.featured_image | optimize_image }}
-{{ product.featured_image | optimize_image: width: 300, height: 300 }}
+{{ product.featured_image.src | optimize_image: width: 300, height: 300 }}
+{{ product.image | optimize_image: width: 600, height: 600, crop: 'center' }}
 ```
 
 **Use Cases:**
 - Product card images
-- Optimizing featured images
 - Responsive image loading
-- Performance optimization
+- Thumbnail generation
+- Banner image optimization
 
-## 3. tracking_url
+## product_url
+
 **Description:**  
-Adds tracking parameters to product URLs for analytics and attribution.
+Generates a complete product URL with tracking parameters and localization.
 
-**Parameters:**  
-- `product` (Object): The product object
-- `section` (Object): The section context
+**Parameters:**
+- `handle` (String, required): Product handle/slug
 - `ref_product_id` (String, optional): Reference product ID
+- `layout` (String, optional): Section layout type
 
 **Returns:**  
-String - Product URL with tracking parameters
+String - Complete product URL with parameters
 
 **Example:**
 ```liquid
-{{ product | tracking_url: section }}
-{{ product | tracking_url: section, ref_product_id: '123' }}
+{% assign url = root_url | product_url: product.handle, glood.product.id, section.layout %}
+<a href="{{ url }}">{{ product.title }}</a>
 ```
 
 **Use Cases:**
-- Product link tracking
-- Analytics integration
-- Click attribution
-- Performance monitoring
+- Product link generation
+- Navigation building
+- Tracking implementation
+- Multi-language support
 
-## 4. section_discount
+## product_discount
+
 **Description:**  
-Formats section-level discount information based on the store's locale and money format.
+Calculates and formats product discount information based on configuration.
 
-**Parameters:**  
-- `section` (Object): The section object containing discount information
-- `money_format` (String): Store's money format
-- `locale` (String): Current locale
+**Parameters:**
+- `discount_config` (Object, required): Discount configuration settings
+- `label_text` (String, required): Template for discount label
+- `money_format` (String, required): Store's money format
 
 **Returns:**  
 String - Formatted discount text
 
 **Example:**
 ```liquid
-{{ section | section_discount }}
-{{ section | section_discount: money_format: shop.money_format, locale: 'en' }}
+{% assign discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format %}
+<span class="discount">{{ discount }}</span>
 ```
 
 **Use Cases:**
-- Section headers
-- Discount badges
-- Sale announcements
-- Promotional displays
-
-## 5. color
-**Description:**  
-Maps color names to valid CSS colors using the template's color mapping settings.
-
-**Parameters:**  
-- `color_name` (String): Color name to map
-- `settings` (Object): Template settings containing color mappings
-
-**Returns:**  
-String - Valid CSS color value
-
-**Example:**
-```liquid
-{{ variant.color | color: template.settings }}
-```
-
-**Use Cases:**
-- Color swatch display
-- Product variant colors
-- UI element styling
-- Background colors
-
-## 6. discount_text
-**Description:**  
-Combines product and section discount information into a formatted string.
-
-**Parameters:**  
-- `product` (Object): Product data
-- `section` (Object): Section configuration
-- `translations` (Object): Translation strings
-- `money_format` (String): Shop's money format
-
-**Returns:**  
-String - Formatted discount text
-
-**Example:**
-```liquid
-{{ '' | discount_text: product, section, translations, money_format: shop.money_format }}
-```
-
-**Use Cases:**
-- Product card discounts
 - Sale badges
-- Promotional text
-- Discount highlights
+- Discount displays
+- Price comparison
+- Promotional messaging
 
-## 7. savings_text
+## save_amount
+
 **Description:**  
-Calculates and formats the savings amount for a product.
+Calculates and formats savings information based on discount configuration.
 
-**Parameters:**  
-- `product` (Object): Product data
-- `section` (Object): Section configuration
-- `translations` (Object): Translation strings
-- `money_format` (String): Shop's money format
+**Parameters:**
+- `discount_config` (Object, required): Discount configuration settings
+- `save_text` (String, required): Template for savings text
+- `money_format` (String, required): Store's money format
 
 **Returns:**  
 String - Formatted savings text
 
 **Example:**
 ```liquid
-{{ '' | savings_text: product, section, translations, money_format: shop.money_format }}
+{{ product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format }}
 ```
 
 **Use Cases:**
-- Savings calculations
-- Sale promotions
-- Discount displays
-- Price comparisons
+- Savings displays
+- Discount comparison
+- Promotional messaging
 
-## Best Practices
+## color_value
 
-1. Always provide required parameters for each filter
-2. Use appropriate image dimensions for different viewports
-3. Test money formatting with different currencies and formats
-4. Consider performance impact of filters
-5. Handle empty or invalid values gracefully
+**Description:**  
+Retrieves color code from a color map object.
+
+**Parameters:**
+- `color_mapping` (Object, required): Color map object
+
+**Returns:**  
+String - Color code
+
+**Example:**
+```liquid
+{{ value | color_value: template.settings.color_mapping }}
+```
+
+**Use Cases:**
+- Theme customization
+- Product attribute mapping
+- UI element styling
+
+## to_boolean
+
+**Description:**  
+Converts any value to a boolean.
+
+**Parameters:**
+- None
+
+**Returns:**  
+Boolean - True or False
+
+**Example:**
+```liquid
+<span data-selected="{{ selected_option.value == value | to_boolean }}">
+```
+
+**Use Cases:**
+- Conditional rendering
+- Boolean logic
+- UI state management
+
+## image_dimensions
+
+**Description:**  
+Calculates responsive image dimensions based on template breakpoint settings.
+
+**Parameters:**
+- `breakpoints` (Object, required): Template breakpoint settings
+
+**Returns:**  
+Object - Object containing calculated dimensions
+
+**Example:**
+```liquid
+{{ client_info.client_width | image_dimensions: template.settings.breakpoints }}
+```
+
+**Use Cases:**
+- Responsive image loading
+- UI element sizing
+- Image optimization
+
+## find
+
+**Description:**  
+Finds an object in an array based on a specified property and value.
+
+**Parameters:**
+- `key` (String, required): Property to match
+- `value` (Any, required): Value to find
+
+**Returns:**  
+Object - Found object
+
+**Example:**
+```liquid
+{% assign variant = product.variants | find: 'id', variant_id %}
+```
+
+**Use Cases:**
+- Array manipulation
+- Object retrieval
+- Conditional logic
+
+## t
+
+**Description:**  
+Translates a key using the translations object with an optional default value.
+
+**Parameters:**
+- `translations` (Object, required): Translations object
+- `default` (String, optional): Default value if translation not found
+
+**Returns:**  
+String - Translated text or default value
+
+**Example:**
+```liquid
+{% assign oos_text = 'oos_text' | t: translations, 'Out of stock' %}
+{{ 'discount_label_text' | t: translations, '' }}
+```
+
+**Use Cases:**
+- Internationalization
+- UI text translation
+- Error messages
+- Button labels
+
+## default
+
+**Description:**  
+Provides a default value if the input is null, undefined or empty.
+
+**Parameters:**
+- `default_value` (Any, required): Value to use if input is empty
+
+**Returns:**  
+Any - Original value or default value
+
+**Example:**
+```liquid
+{{ template.settings.product_card.min_quantity | default: 1 }}
+{{ translations.oos_text | default: 'Out of stock' }}
+```
+
+**Use Cases:**
+- Setting default quantities
+- Fallback text
+- Configuration defaults
+- Error prevention
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Undefined filter` | Filter name misspelled or not available | Check filter name and ensure template has access to all filters |
+| `Missing required parameter` | Required parameter not provided | Ensure all required parameters are passed to the filter |
+| `Invalid input type` | Input value type doesn't match filter requirements | Convert input to correct type before passing to filter |
+| `Object not found` | Referenced object doesn't exist in context | Verify object exists in template context before using filter |
+
+
+## Notes
+
+- All filters are available in both section templates and CSS templates
+- Some filters require specific objects from the template context
+- Filter parameters marked as required must be provided for the filter to work correctly
+- See [Object Definitions](/for-developers/section-template/schemas#object-definitions) for details about input objects
 
 ## Support
 
-For questions about filters or custom filter development, contact our support team at support@glood.ai 
+For help with template customization or troubleshooting, contact our support team at support@glood.ai 
