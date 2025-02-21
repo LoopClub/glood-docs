@@ -8,19 +8,16 @@ description: 'Complete guide to hooks in Glood.AI section templates'
 ## Hook Lifecycle Flow
 
 ### 1. Section Initialization Phase
-- `initSection` is called when section is first created
+- `onSectionInit` is called when section is first created
   - Sets up initial state and variables
   - Configures section parameters
-  - Initializes custom features
-  - Prepares recommendation engine
   - Registers event listeners
 
 ### 2. Data Fetching Phase
-- `getProductFetchQuery` is called to prepare GraphQL query
+- `getProductDetailsQuery` is called to prepare GraphQL query
   - Defines required product fields
   - Sets up query variables
   - Configures custom data requirements
-  - Handles pagination if needed
   - Sets up filtering parameters
 
 ### 3. Data Processing Phase
@@ -28,57 +25,41 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Filters products if needed
   - Adds computed properties
   - Transforms data structure
-  - Handles currency formatting
-  - Prepares variant data
 - `transformProductData` transforms individual product data
   - Normalizes data format
   - Adds custom fields
   - Prepares for rendering
-  - Handles translations
-  - Sets up tracking data
 
 ### 4. Rendering Phase
-- `afterSectionRendered` is called once DOM is ready
-  - Sets up DOM event listeners
-  - Initializes UI components
-  - Triggers animations
-  - Sets up lazy loading
-  - Handles responsive behavior
+- `afterSectionRendered` is called once section is rendered on the page and ready to be used.
+
+    **Note:** This is an optional hook, if you want to perform certain task, you can add your logic in this hook.
+
 - `initSwiper` (if carousel is enabled)
   - Configures carousel settings
   - Sets up navigation
   - Initializes responsive behavior
   - Sets up pagination
-  - Configures autoplay
 
 ### 5. Interaction Phase
 - `onVariantChange` handles variant selection
-  - Updates product options
-  - Refreshes pricing
-  - Updates availability
-  - Updates images
-  - Handles inventory status
+  
+  **Note:** This is an optional hook, if you want to perform certain task, you can add your logic in this hook.
+
 - `onSwatchChange` handles swatch interactions
-  - Updates product images
-  - Refreshes variant selection
-  - Updates UI state
-  - Handles color mapping
-  - Updates availability
+
+  **Note:** This is an optional hook, if you want to perform certain task, you can add your logic in this hook.
 
 ### 6. Cart Operation Phase
 - `beforeAddToCart` validates cart operations
   - Validates product selection
-  - Checks inventory
   - Modifies cart payload
   - Handles quantity validation
-  - Prepares tracking data
 - `afterAddToCart` handles post-cart updates
-  - Updates UI
-  - Shows notifications
-  - Refreshes cart state
-  - Updates inventory
-  - Triggers analytics
+  
+  **Note:** This is an optional hook, if you want to perform custom logic, you can setup your logic in this hook.
 
+{/*  
 ### 7. Cleanup Phase
 - Cleanup operations when section is removed/updated
   - Remove event listeners
@@ -86,10 +67,11 @@ description: 'Complete guide to hooks in Glood.AI section templates'
   - Reset state if needed
   - Clear timers/intervals
   - Free up resources
+ */}
 
 ## Available Hooks
 
-### 1. initSection
+### 1. onSectionInit
 **Purpose:**  
 Primary initialization hook called when a section is first created.
 
@@ -110,18 +92,34 @@ Primary initialization hook called when a section is first created.
    - No return value expected
 
 3. `gloodUtils` provides:
-   - `formatMoney`: For currency formatting
-   - `merge`: For deep object merging
-   - `generateTrackingData`: Creates tracking information
-   - `setupLazyLoading`: Handles image lazy loading
-   - Various other utility functions for common operations
+
+| Function | Description |
+|----------|-------------|
+| `formatMoney` | Formats price values according to store's money format |
+| `optimizeImage` | Optimizes image URLs with specified dimensions and crop settings |
+| `getVariantFromOptions` | Finds a variant based on selected options |
+| `findVariantById` | Retrieves a variant using its ID |
+| `getSelectedVariant` | Gets currently selected variant for a product |
+| `getDefaultVariant` | Returns the default/first available variant |
+| `addToCart` | Handles adding items to cart with proper validation |
+| `updateCart` | Updates existing cart items (quantity, properties) |
+| `getProductUrl` | Generates product URL with tracking parameters |
+| `getDiscountedPrice` | Calculates discounted price based on rules |
+| `formatDiscount` | Formats discount text with proper currency/percentage |
+| `getTranslation` | Retrieves translated text with fallback support |
+| `trackEvent` | Sends tracking events to analytics |
+| `refreshSection` | Re-renders section with updated data |
+| `showNotification` | Displays toast/notification messages |
 
 **Example:**
 ```javascript
-initSection: (args, cb, gloodUtils) => {
-    const { recommendation, engine } = args;
-    setupSection(recommendation);
-    cb();
+onSectionInit: (args, cb, gloodUtils) => {
+    const { recommendation, engine, initEnginePayload } = args;
+    cb({
+        recommendation,
+        engine,
+        initEnginePayload,
+    });
 }
 ```
 
@@ -132,7 +130,7 @@ initSection: (args, cb, gloodUtils) => {
 - Feature initialization
 - Engine configuration
 
-### 2. getProductFetchQuery
+### 2. getProductDetailsQuery
 **Purpose:**  
 Builds the GraphQL query for fetching product data.
 
@@ -140,7 +138,7 @@ Builds the GraphQL query for fetching product data.
 
 1. `recommendation` contains:
    - [`section`](/for-developers/section-template/schemas#section-object) object with:
-     - `id` (String): Unique section identifier
+     - `id` (number): Unique section identifier
      - `layout` (String): Section layout type
      - `discount_config` (Object): Discount settings
      - `widget_message` (String): Custom message template
@@ -152,7 +150,7 @@ Builds the GraphQL query for fetching product data.
      - `money_format` (String): Store currency format
      - `locale` (String): Store language code
    - `product` object with:
-     - `id` (String): Current product context
+     - `id` (String): Current product context (format: "gid://shopify/Product/{id}")
      - `handle` (String): Product URL handle
    - `localization` settings for:
      - Currency formatting
@@ -164,19 +162,36 @@ GraphQL query string containing required product fields
 
 **Example:**
 ```javascript
-getProductFetchQuery: (recommendation, glood) => {
+getProductDetailsQuery: (recommendation, glood) => {
     return `
-        query ProductData($id: ID!) {
-            product(id: $id) {
-                title
-                handle
-                variants(first: 250) {
-                    nodes {
-                        id
-                        price
-                        available
-                    }
+        featuredImage {
+            url
+        }
+        handle
+        id
+        title
+        availableForSale
+        priceRange {
+            minVariantPrice {
+                amount
+                currencyCode
+            }
+        }
+        compareAtPriceRange {
+            minVariantPrice {
+                amount
+                currencyCode
+            }
+        }
+        variants(first: 250) {
+            nodes {
+                id
+                price {
+                    amount
+                    currencyCode
                 }
+                availableForSale
+                // ... other variant fields
             }
         }
     `;
@@ -233,7 +248,7 @@ Transforms raw GraphQL product data into template-friendly format.
 
 1. `product` (Raw GraphQL data) contains:
    - Basic information:
-     - `id` (String): GraphQL product ID
+     - `id` (String): GraphQL product ID (format: "gid://shopify/Product/{id}")
      - `handle` (String): Product URL handle
      - `title` (String): Product title
      - `vendor` (String): Product vendor
@@ -353,7 +368,10 @@ Initializes and configures the carousel/slider functionality for sections using 
 ```javascript
 initSwiper: (Swiper, templateSettings, container, params, defaultSettings, utils) => {
   const carouselContainer = container.querySelector('._gai-crz-cnt');
-  if (!carouselContainer) return;
+  if (!carouselContainer) {
+    console.error('GLOOD.AI:ERROR: Carousel container not found for section', params.recommendation.section.id);
+    return;
+  }
   
   const settings = templateSettings?.carousel?.swiperConfig || {};
   const swiperConfig = utils.merge(defaultSettings, settings);
@@ -492,7 +510,7 @@ Processes raw product data before transformation and rendering.
 
 1. `args` contains:
    - `products` array with raw product data:
-     - `id` (String): Product identifier
+     - `id` (number): Product identifier
      - `title` (String): Product title
      - `handle` (String): Product URL handle
      - `featuredImage` (Object): Main product image
@@ -537,19 +555,50 @@ void
 - `utils`: Common utilities
 
 ### Hook Flow Dependencies
-- `transformProductData` needs data from `getProductFetchQuery`
+- `transformProductData` needs data from `getProductDetailsQuery`
 - `afterSectionRendered` needs data from `transformProductData`
 - Cart operations need data from `onVariantChange`
 - Swiper needs container from `afterSectionRendered`
 
-### Error Handling
-Each hook should handle errors appropriately:
-1. Initialization errors: Use default configuration
-2. Data fetching errors: Show fallback content
-3. Processing errors: Maintain data integrity
-4. Rendering errors: Graceful degradation
-5. Interaction errors: User feedback 
+## Error Handling
+Each hook should handle these critical errors:
 
+1. Carousel Initialization Errors
+   ```javascript
+   // Critical: Section won't render if carousel container is missing
+   if (!carouselContainer) {
+     console.error('GLOOD.AI:ERROR: Carousel container not found for section', params.recommendation.section.id);
+     return;
+   }
+   ```
+
+2. Product Data Transformation Errors
+   ```javascript
+   // Critical: Invalid product data will break the section
+   if (!product.variants?.nodes) {
+     console.error('GLOOD.AI:ERROR: Invalid variant data structure for product', product.id);
+     return {
+       ...product,
+       variants: [],
+       available: false
+     };
+   }
+   ```
+
+3. GraphQL Query Response Errors
+   ```javascript
+   // Critical: Missing required fields will cause rendering issues
+   if (!product.priceRange?.minVariantPrice?.amount) {
+     console.error('GLOOD.AI:ERROR: Missing price data for product', product.id);
+     return null;
+   }
+   ```
+
+These errors require immediate attention as they:
+- Prevent sections from rendering correctly
+- Break core product functionality
+- Impact the shopping experience
+- Can cause JavaScript runtime errors
 
 ## Support
 

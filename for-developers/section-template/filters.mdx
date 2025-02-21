@@ -11,7 +11,7 @@ Formats numeric values into the store's currency format based on the money_forma
 
 **Parameters:**
 - `value` (Number/String): The numeric price value to be formatted
-- `money_format` (String, optional): Override default money format
+- `money_format` (String): Override default money format
 
 **Returns:**  
 String - Formatted price string with currency symbol
@@ -190,52 +190,6 @@ Object - Object containing calculated dimensions
 - UI element sizing
 - Image optimization
 
-## find
-
-**Description:**  
-Finds an object in an array based on a specified property and value.
-
-**Parameters:**
-- `key` (String, required): Property to match
-- `value` (Any, required): Value to find
-
-**Returns:**  
-Object - Found object
-
-**Example:**
-```liquid
-{% assign variant = product.variants | find: 'id', variant_id %}
-```
-
-**Use Cases:**
-- Array manipulation
-- Object retrieval
-- Conditional logic
-
-## t
-
-**Description:**  
-Translates a key using the translations object with an optional default value.
-
-**Parameters:**
-- `translations` (Object, required): Translations object
-- `default` (String, optional): Default value if translation not found
-
-**Returns:**  
-String - Translated text or default value
-
-**Example:**
-```liquid
-{% assign oos_text = 'oos_text' | t: translations, 'Out of stock' %}
-{{ 'discount_label_text' | t: translations, '' }}
-```
-
-**Use Cases:**
-- Internationalization
-- UI text translation
-- Error messages
-- Button labels
-
 ## default
 
 **Description:**  
@@ -261,13 +215,18 @@ Any - Original value or default value
 
 ## Error Handling
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `Undefined filter` | Filter name misspelled or not available | Check filter name and ensure template has access to all filters |
-| `Missing required parameter` | Required parameter not provided | Ensure all required parameters are passed to the filter |
-| `Invalid input type` | Input value type doesn't match filter requirements | Convert input to correct type before passing to filter |
-| `Object not found` | Referenced object doesn't exist in context | Verify object exists in template context before using filter |
+| Error | Description | Solution |
+|-------|-------------|----------|
+| Invalid Price Format | Price value is null or not a number | 1. Use the default filter to set a fallback value (0)<br />2. Apply money filter to format the price |
+| Missing Image Dimensions | Width/height not specified for image optimization | 1. Always specify width and height parameters<br />2. Use default dimensions (300x300) if not provided |
+| Invalid Tracking Parameters | Missing required section context | 1. Check if section ID exists<br />2. Verify product handle is present<br />3. Fall back to standard product URL if missing |
+| Invalid Discount Configuration | Missing money format or invalid discount structure | 1. Ensure shop money format is provided<br />2. Validate discount configuration before applying |
 
+These errors require proper handling to:
+- Prevent template rendering failures
+- Maintain consistent price display
+- Ensure proper image loading
+- Keep tracking functionality intact
 
 ## Notes
 

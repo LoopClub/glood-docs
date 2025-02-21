@@ -20,14 +20,14 @@ The main template that defines the HTML structure and dynamic content rendering.
 - Applies [template settings](/for-developers/section-template/schemas#template-object) for styling
 
 #### Liquid Filters
-Special filters used in the template:
+Our filters used in the template:
 
-| Filter | Purpose | Parameters | Input | Output | Example |
-|--------|---------|------------|-------|--------|---------|
-| `money` | Price formatting | `money_format` (optional): Override default format | Number/String | Formatted price | `19.99 \| money` → `"$19.99"` |
-| `optimize_image` | Image optimization | - `width` (optional): Desired width<br />- `height` (optional): Desired height<br />- `crop` (optional): Crop mode | URL | Optimized URL | `product.image \| optimize_image: width: 300, height: 300` |
-| `tracking_url` | Add tracking | - `section` (required): Section context<br />- `ref_product_id` (optional): Reference product ID | Product | URL with params | `product \| tracking_url: section` |
-| `section_discount` | Format discount | - `money_format` (optional): Price format<br />- `locale` (optional): Language code | Section | Discount string | `section \| section_discount: money_format: shop.money_format` |
+| Filter | Purpose | Parameters | Output | Example |
+|--------|---------|------------|--------|---------|
+| `money` | Price formatting | Number/String, `money_format`: Override default format | Formatted price | `19.99 \| money` → `"$19.99"` |
+| `optimize_image` | Image optimization | URL, `width`: Desired width, `height`: Desired height, `crop`: Crop mode | Optimized URL | `product.image \| optimize_image: width: 300, height: 300` |
+| `tracking_url` | Add tracking | Product, `section` (required): Section context, `ref_product_id`: Reference product ID | URL with params | `product \| tracking_url: section` |
+| `section_discount` | Format discount | Section, `money_format`: Price format, `locale`: Language code | Discount string | `section \| section_discount: money_format: shop.money_format` |
 
 ### 2. JS Hooks
 
@@ -35,22 +35,22 @@ The JavaScript hooks system provides a powerful way to customize and extend sect
 
 #### Core callBacks available
 
-| Method Name | Parameters | Description | Return | Default Value |
-|-------------|------------|-------------|---------|---------------|
-| `initSwiper` | `(Swiper, templateSettings, container, params, defaultSettings, utils)` | Initializes carousel functionality | `Swiper instance` | null |
-| `onSectionInit` | `(args, cb, gloodUtils)` | Called when section initializes | `void` | null |
-| `onSectionRenderComplete` | `(args, utils)` | Called after section rendering | `void` | null |
-| `onVariantChange` | `(args, utils)` | Handles variant selection | `void` | null |
-| `onSwatchChange` | `(args, utils)` | Handles swatch selection | `void` | null |
-| `validateCartOperation` | `(payload, recommendation, utils)` | Validates cart operations | `{payload, error}` | null |
-| `onCartOperationComplete` | `(args, utils)` | Called after cart operation | `void` | null |
-| `onProductDataReceived` | `(args, utils)` | Handles product data | `void` | null |
-| `getProductDetailsQuery` | `(recommendation, glood)` | Returns GraphQL query | `string` | "" |
-| `transformProductData` | `(product, recommendation)` | Transforms product data | `object` | {} |
-| `onSectionRendered` | `(section, products)` | Fired when section is fully rendered | `void` | null |
-| `onProductClick` | `(section, products, productId)` | Fired when product is clicked | `void` | null |
-| `onAddToCart` | `(section, products, items, response)` | Fired on successful cart addition | `void` | null |
-| `onVariantSelected` | `(section, products, productId, variantId)` | Fired when variant is selected | `void` | null |
+| Method Name | Parameters | Description | Return |
+|-------------|------------|-------------|---------|
+| `initSwiper` | `(Swiper, templateSettings, container, params, defaultSettings, utils)` | Initializes carousel functionality | `Swiper instance` |
+| `onSectionInit` | `(args, cb, gloodUtils)` | Called when section initializes | `void` |
+| `onSectionRenderComplete` | `(args, utils)` | Called after section rendering | `void` |
+| `onVariantChange` | `(args, utils)` | Handles variant selection | `void` |
+| `onSwatchChange` | `(args, utils)` | Handles swatch selection | `void` |
+| `validateCartOperation` | `(payload, recommendation, utils)` | Validates cart operations | `{payload, error}` |
+| `onCartOperationComplete` | `(args, utils)` | Called after cart operation | `void` |
+| `onProductDataReceived` | `(args, utils)` | Handles product data | `void` |
+| `getProductDetailsQuery` | `(recommendation, glood)` | Returns GraphQL query | `string` |
+| `transformProductData` | `(product, recommendation)` | Transforms product data | `object` |
+| `onSectionRendered` | `(section, products)` | Fired when section is fully rendered | `void` |
+| `onProductClick` | `(section, products, productId)` | Fired when product is clicked | `void` |
+| `onAddToCart` | `(section, products, items, response)` | Fired on successful cart addition | `void` |
+| `onVariantSelected` | `(section, products, productId, variantId)` | Fired when variant is selected | `void` |
 
 #### Example Implementation
 ```javascript
@@ -82,40 +82,50 @@ The CSS template system provides a flexible way to style your recommendation sec
 #### Structure and Organization
 The CSS is organized by components and breakpoints:
 - Base styles for mobile-first approach
-- Tablet styles (min-width: 768px)
-- Desktop styles (min-width: 1024px)
+- Tablet styles (default: 768px)
+- Desktop styles (default: 1024px)
 
-**NOTE:** These breakpoint values are customizable through the template settings. For detailed configuration options, see [`settings.breakpoints[].screenSize`](/for-developers/section-template/schemas#template-object) in the Template Object documentation.
+**NOTE:** 
+1. The CSS follows a mobile-first approach, where base styles are written for mobile devices and then progressively enhanced for larger screens through media queries. This ensures optimal performance and maintainability while providing a solid foundation for responsive design.
+2. These breakpoint values are customizable through the template settings. For detailed configuration options, see [`settings.breakpoints[].screenSize`](/for-developers/section-template/schemas#template-object) in the Template Object documentation.
 
 #### CSS Class Reference
 
 | Class Name | Purpose | Properties Controlled | Example Usage |
 |------------|---------|---------------------|---------------|
 | `._gai-grid` | Main product grid container | - Grid layout (`grid-template-columns`)<br />- Gap between items<br />- Responsive columns | Controls overall product grid layout |
-| `._gai-sec-tit` | Section title styling | - Font size<br />- Text alignment<br />- Line clamping<br />- Display properties | Main section heading appearance |
-| `._gai-prod-card` | Individual product card | - Background color<br />- Font family<br />- Layout structure | Container for each product |
-| `._gai-prod-img` | Product image container | - Aspect ratio<br />- Object-fit<br />- Width/height | Product image display |
-| `._gai-prod-tit` | Product title | - Font size<br />- Line clamping<br />- Text alignment<br />- Font weight | Product name styling |
-| `._gai-prod-vndr` | Vendor name | - Font size<br />- Display properties<br />- Position | Brand/vendor name display |
+| `._gai-sec-tit` | Section title styling | - Font size<br />- Text alignment<br />- Line clamping<br />- Display properties<br />- Webkit box orientation | Main section heading appearance |
+| `._gai-prod-card` | Individual product card | - Background color<br />- Font family<br />- Max width (for bundle layout) | Container for each product |
+| `._gai-prod-img` | Product image container | - Aspect ratio<br />- Object-fit | Product image display |
+| `._gai-prod-img-wrap` | Image wrapper | - Aspect ratio | Controls image container proportions |
+| `._gai-prod-tit` | Product title | - Color<br />- Font weight<br />- Line clamping<br />- Text alignment<br />- Font size<br />- Font family | Product name styling |
+| `._gai-prod-vndr` | Vendor name | - Font size<br />- Display properties | Brand/vendor name display |
+| `._gai-prod-vndr--above-title` | Vendor name above title | - Display (block/none) | Vendor positioning above title |
+| `._gai-prod-vndr--below-title` | Vendor name below title | - Display (block/none) | Vendor positioning below title |
 | `._gai-prod-prc` | Product price | - Color<br />- Font family<br />- Font size | Main price display |
-| `._gai-prod-prc--original` | Compare-at price | - Color<br />- Display<br />- Text decoration | Original/compare price styling |
-| `._gai-atc-btn` | Add to cart button | - Background color<br />- Text color<br />- Border radius<br />- Hover states | Add to cart button styling |
-| `._gai-dis-cnt` | Discount container | - Justification<br />- Background<br />- Display properties | Discount information wrapper |
-| `._gai-dis-txt` | Discount text | - Color<br />- Font size<br />- Text alignment | Discount amount/percentage text |
-| `._gai-dis` | Discount badge | - Background color<br />- Text color<br />- Opacity<br />- Position | Discount label styling |
+| `._gai-prod-prc--original` | Compare-at price | - Color<br />- Display<br />- Visibility conditions | Original/compare price styling |
+| `._gai-atc-btn` | Add to cart button | - Background color<br />- Text color<br />- Border<br />- Border radius<br />- Disabled state | Add to cart button styling |
+| `._gai-dis-cnt` | Discount container | - Justification<br />- Background color<br />- Display (flex/none) | Discount information wrapper |
+| `._gai-dis-txt` | Discount text | - Color<br />- Font size | Discount amount/percentage text |
+| `._gai-dis` | Discount badge | - Background color<br />- Text color<br />- Opacity | Discount label styling |
+| `._gai-container` | Main section container | - Background color | Section wrapper styling |
+| `._gai-bundle-products` | Bundle products grid | - Grid template columns | Layout for bundled products |
+| `._gai-skl-atc` | Skeleton add to cart | - Display visibility | Loading state for add to cart |
+| `._gai-bndl-sec` | Bundle section | - Justify content | Bundle section layout |
+| `._gai-amz-tit` | Amazon bundle title | - Text alignment | Title for Amazon-style bundles |
 
 #### Label Classes
 Special classes for product status and badges:
 
 | Class Name | Purpose | Customizable Properties |
 |------------|---------|------------------------|
-| `._gai-oos` | Out of stock badge | Background/text colors |
-| `._gai-bestseller` | Bestseller badge | Background/text colors |
-| `._gai-new` | New product badge | Background/text colors |
-| `._gai-trending` | Trending item badge | Background/text colors |
+| `._gai-oos` | Out of stock badge | - Background color<br />- Text color |
+| `._gai-bestseller` | Bestseller badge | - Background color<br />- Text color |
+| `._gai-new` | New product badge | - Background color<br />- Text color |
+| `._gai-trending` | Trending item badge | - Background color<br />- Text color |
 
 #### Responsive Behavior
-The file includes media queries for different screen sizes:
+The code includes media queries for different screen sizes:
 ```scss
 /* Mobile (default) */
 [data-gai-section-id="{{ section_id }}"] ._gai-grid {
