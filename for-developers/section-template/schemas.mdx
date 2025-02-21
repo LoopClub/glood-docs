@@ -83,10 +83,14 @@ The glood object provides essential store information and configuration settings
 | `config.page_url` | string | Current page URL | "adarsh-test2-store.myshopify.com/products/soap" |
 | `config.uid` | string | Unique identifier | "1737978965-cd63b5e8-9f99-4519-a4bc-b0dac71ccead" |
 
-**NOTE:** All property keys are automatically converted to snake_case when used in Liquid templates. For example:
+**NOTE:** 
+1. All property keys are automatically converted to snake_case when used in Liquid templates. For example:
 - `rootUrl` → `root_url`
 - `devicePixelRatio` → `device_pixel_ratio`
 - `moneyFormat` → `money_format`
+
+2. If you want to get the content of glood object, you can access it through `window.glood` inside your store.
+
 
 Example usage in Liquid:
 ```liquid
