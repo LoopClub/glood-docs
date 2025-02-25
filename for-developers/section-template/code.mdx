@@ -5,782 +5,144 @@ description: 'Learn about the core components of a section template'
 
 # Template Code
 
-Every section template in Glood.AI consists of several core files that work together to create a complete recommendation section. Here's a detailed look at each component.
+Every section template in Glood.AI consists of several core files that work together to create a complete recommendation section. We use the [liquidJS](https://liquidjs.com/api/classes/Liquid.html) library to render Liquid code at the client side. For any queries regarding Liquid-specific data structures, filters, or tags, please refer to the [Shopify Liquid documentation](https://shopify.dev/docs/api/liquid/objects).
 
-## Core Files
+## Core Parts
 
-### 1. Liquid Template (`theme.liquid`)
+### 1. Section Template
 
-The main template file that defines the HTML structure and dynamic content rendering. It supports three main layout types:
-- Horizontal Grid
-- Carousel
-- Amazon-style "Bought Together"
+The main template that defines the HTML structure and dynamic content rendering. It uses data structures defined in the [Object Definitions](/for-developers/section-template/schemas#object-definitions).
 
-Here's the complete template structure:
+#### Dynamic Implementation
+- Uses [translations object](/for-developers/section-template/schemas#translations-object) for text content
+- Accesses [glood object](/for-developers/section-template/schemas#glood-object) for store configuration
+- Renders [product data](/for-developers/section-template/schemas#product-array) in templates
+- Applies [template settings](/for-developers/section-template/schemas#template-object) for styling
 
-```liquid
-{%- assign translations = template.translations %}
-{%- assign translations_discount_label_text = translations.discount_label_text | default: '' -%}
-{% assign root_url = glood.shopify.rootUrl %}
+#### Liquid Filters
+Our filters used in the template:
 
-{% assign section_discount_str = section | section_discount: money_format: glood.shop.money_format, locale: glood.localization.language.locale %}
-{% assign image_dim = template.settings.breakpoints[0] %}
+| Filter | Purpose | Parameters | Output | Example |
+|--------|---------|------------|--------|---------|
+| `money` | Price formatting | Number/String, `money_format`: Override default format | Formatted price | `19.99 \| money` → `"$19.99"` |
+| `optimize_image` | Image optimization | URL, `width`: Desired width, `height`: Desired height, `crop`: Crop mode | Optimized URL | `product.image \| optimize_image: width: 300, height: 300` |
+| `tracking_url` | Add tracking | Product, `section` (required): Section context, `ref_product_id`: Reference product ID | URL with params | `product \| tracking_url: section` |
+| `section_discount` | Format discount | Section, `money_format`: Price format, `locale`: Language code | Discount string | `section \| section_discount: money_format: shop.money_format` |
 
-{% capture quantity_selector %}
-  {% if template.settings.product_card.show_quantity_selector %}
-    <div class="_gai-qnt-cnt">
-      <button
-        class="_gai-qnt-btn"
-        data-min="{{ template.settings.product_card.min_quantity |  default: 1 }}"
-      >
-        -
-      </button>
-      <input
-        type="text"
-        class="_gai-qnt-inp"
-        id="quantity"
-        value="{{ template.settings.product_card.min_quantity |  default: 1 }}"
-        readonly
-      >
-      <button
-        class="_gai-qnt-btn"
-        data-max="{{ template.settings.product_card.max_quantity |  default: 10 }}"
-      >
-        +
-      </button>
-    </div>
-  {% endif %}
-{% endcapture %}
+### 2. JS Hooks
 
-{% capture spinner_loader %}
-  <svg width="14" height="14" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="100" cy="100" r="90" stroke="white" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="0">
-      <animateTransform attributeType="XML" attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="1s" repeatCount="indefinite" />
-    </circle>
-  </svg>
-{% endcapture %}
+The JavaScript hooks system provides a powerful way to customize and extend section behavior. These hooks are called at specific points in the section's lifecycle, allowing you to implement custom functionality and handle various events.
 
-<section
-  data-show-skeleton="{{ show_skeleton }}"
-  data-gai-section-id="{{ section.id }}"
-  class="_gai-container"
-  data-layout="{{ section.layout }}"
->
-  {% if section.layout != 'amazon_bought_together' %}
-    <div class="_gai-sec-head">
-      <h3 class="_gai-sec-tit">{{ section.title }}</h3>
-      {% if section_discount_str.length > 0 %}
-        <div class="_gai-dis-cnt">
-          <span class="_gai-dis-txt">{{ section_discount_str }}</span>
-        </div>
-      {% endif %}
-    </div>
-  {% endif %}
+#### Core callBacks available
 
-  {% if section.layout == 'horizontal_grid' %}
-    <!-- Horizontal Grid Layout -->
-    <ul class="_gai-grid">
-      {% for product in products %}
-        <li class="_gai-grid-item">
-          {% include 'product-card' %}
-        </li>
-      {% endfor %}
-    </ul>
+| Method Name | Parameters | Description | Return |
+|-------------|------------|-------------|---------|
+| `initSwiper` | `(Swiper, templateSettings, container, params, defaultSettings, utils)` | Initializes carousel functionality | `Swiper instance` |
+| `onSectionInit` | `(args, cb, gloodUtils)` | Called when section initializes | `void` |
+| `onSectionRenderComplete` | `(args, utils)` | Called after section rendering | `void` |
+| `onVariantChange` | `(args, utils)` | Handles variant selection | `void` |
+| `onSwatchChange` | `(args, utils)` | Handles swatch selection | `void` |
+| `validateCartOperation` | `(payload, recommendation, utils)` | Validates cart operations | `{payload, error}` |
+| `onCartOperationComplete` | `(args, utils)` | Called after cart operation | `void` |
+| `onProductDataReceived` | `(args, utils)` | Handles product data | `void` |
+| `getProductDetailsQuery` | `(recommendation, glood)` | Returns GraphQL query | `string` |
+| `transformProductData` | `(product, recommendation)` | Transforms product data | `object` |
+| `onSectionRendered` | `(section, products)` | Fired when section is fully rendered | `void` |
+| `onProductClick` | `(section, products, productId)` | Fired when product is clicked | `void` |
+| `onAddToCart` | `(section, products, items, response)` | Fired on successful cart addition | `void` |
+| `onVariantSelected` | `(section, products, productId, variantId)` | Fired when variant is selected | `void` |
 
-  {% elsif section.layout == 'carousel' %}
-    <!-- Carousel Layout -->
-    <div class="_gai-crz-cnt swiper">
-      <div class="swiper-wrapper">
-        {% for product in products %}
-          <div class="swiper-slide">
-            {% include 'product-card' %}
-          </div>
-        {% endfor %}
-      </div>
-      <div class="_gai-crz-p-btn">
-        <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M11.4448 2.28298L1.75006 11.9777L11.4448 21.6724" stroke="black" stroke-opacity="0.47" stroke-width="3.2537" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="_gai-crz-n-btn">
-        <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2.55518 2.28298L12.2499 11.9777L2.55518 21.6724" stroke="black" stroke-opacity="0.47" stroke-width="3.2537" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      {% if template.settings.carousel.show_pagination %}
-        <div class="_gai-crz-pag"></div>
-      {% endif %}
-    </div>
-
-  {% elsif section.layout == 'amazon_bought_together' %}
-    <!-- Amazon-style Layout -->
-    <div class="_gai-bndl-sec">
-      <div class="_gai-bundle-products">
-        {% for product in products %}
-          {% include 'product-card' with checkbox: true %}
-        {% endfor %}
-      </div>
-      <div class="_gai-amz-details">
-        <div class="_gai-amz-price">
-          <div class="_gai-bndl-prc-value"></div>
-          <div class="_gai-bndl-cmp-prc-value"></div>
-        </div>
-        <button class="_gai-atc-btn">
-          {{ translations.fbt_add_to_cart_text | default: 'Add selected to cart' }}
-        </button>
-      </div>
-    </div>
-  {% endif %}
-</section>
-
-{% comment %} Product Card Template {% endcomment %}
-{% capture product_card %}
-  <div 
-    class="_gai-prod-card"
-    data-gai-product-card
-    data-rk-product-id="{{ product.id }}"
-    data-selling-price="{{ product.price }}"
-    data-original-price="{{ product.compare_at_price }}"
-  >
-    <div class="_gai-lbls-grp">
-      {% if product.available == false %}
-        <span class="_gai-pill _gai-oos">{{ translations.oos_text | default: 'Out Of Stock' }}</span>
-      {% endif %}
-      {% for label in template.settings.labels %}
-        {% if product.tags contains label.name %}
-          <span class="_gai-pill _gai-{{ label.name }}">
-            {{- translations[label.name] | default: label.name -}}
-          </span>
-        {% endif %}
-      {% endfor %}
-    </div>
-
-    <a 
-      class="_gai-prod-img-wrap"
-      href="{{ product | tracking_url: section }}"
-    >
-      <img 
-        class="_gai-prod-img"
-        src="{{ product.featured_image | optimize_image: client_width: client_info.client_width, settings: template.settings }}"
-        alt="{{ product.title }}"
-        width="{{ image_dim.image_width }}"
-        height="{{ image_dim.image_height }}"
-      >
-      {% if product.images[1] %}
-        <img 
-          class="_gai-prod-img _gai-sec-img"
-          src="{{ product.images[1] | optimize_image: client_width: client_info.client_width, settings: template.settings }}"
-          alt="{{ product.title }}"
-          width="{{ image_dim.image_width }}"
-          height="{{ image_dim.image_height }}"
-        >
-      {% endif %}
-    </a>
-
-    <div class="_gai-prod-dtls">
-      {% if template.settings.product_card.vendor_position == 'above' %}
-        <div class="_gai-prod-vndr">{{ product.vendor }}</div>
-      {% endif %}
-
-      <a class="_gai-prod-tit" href="{{ product | tracking_url: section }}">
-        {{ product.title }}
-      </a>
-
-      {% if template.settings.product_card.vendor_position == 'below' %}
-        <div class="_gai-prod-vndr">{{ product.vendor }}</div>
-      {% endif %}
-
-      <div class="_gai-prod-price-wrp">
-        {% if template.settings.product_card.price_compare_at_mode == 'before' %}
-          <span class="_gai-prod-prc _gai-prod-prc--original">
-            {{ product.compare_at_price | money: money_format: glood.shop.money_format }}
-          </span>
-        {% endif %}
-
-        <span class="_gai-prod-prc">
-          {{ product.price | money: money_format: glood.shop.money_format }}
-        </span>
-
-        {% if template.settings.product_card.price_compare_at_mode == 'after' %}
-          <span class="_gai-prod-prc _gai-prod-prc--original">
-            {{ product.compare_at_price | money: money_format: glood.shop.money_format }}
-          </span>
-        {% endif %}
-      </div>
-
-      {% assign save_text = product | savings_text: section, translations, money_format: glood.shop.money_format %}
-      {% if save_text.length > 0 %}
-        <div class="_gai-pd-save-t">{{ save_text }}</div>
-      {% endif %}
-
-      {% if template.settings.product_card.variant_selector_type == 'swatch' %}
-        {% include 'swatch-selector' %}
-      {% elsif template.settings.product_card.variant_selector_type == 'dropdown' %}
-        {% include 'variant-selector' %}
-      {% endif %}
-
-      {{ quantity_selector }}
-
-      <button 
-        class="_gai-atc-btn"
-        data-variant-id="{{ product.selected_variant.id }}"
-        data-product-id="{{ product.id }}"
-        {% if product.available == false %}disabled{% endif %}
-      >
-        <span class="_gai-atc-text">
-          {% if product.available %}
-            {{ translations.atc_text | default: 'Add to Cart' }}
-          {% else %}
-            {{ translations.oos_text | default: 'Out of Stock' }}
-          {% endif %}
-        </span>
-        <span class="_gai-atc-spn">{{ spinner_loader }}</span>
-      </button>
-    </div>
-  </div>
-{% endcapture %}
-
-### 2. JavaScript (`theme.js`)
-
-Handles interactivity and dynamic functionality through lifecycle hooks:
-
+#### Example Implementation
 ```javascript
-export default {
-  // Carousel initialization
-  initSwiper: (Swiper, templateSettings, container, params, defaultSettings, utils) => {
-    const carouselContainer = container.querySelector('._gai-crz-cnt')
-    if (!carouselContainer) {
-      console.error('GLOOD.AI:ERROR: Carousel container not found for section', params.recommendation.section.id)
-      return
+// Example: Carousel Initialization Hook
+initSwiper: (Swiper, templateSettings, container, params) => {
+    const carouselContainer = container.querySelector('._gai-crz-cnt');
+    if (!carouselContainer) return;
+    
+    return new Swiper(carouselContainer, {
+        slidesPerView: templateSettings.breakpoints.small.cardsPerView,
+        spaceBetween: templateSettings.breakpoints.small.gutter
+    });
+}
+
+// Example: Variant Change Hook
+onVariantChange: (args, utils) => {
+    const { variant, product, container } = args;
+    const priceElement = container.querySelector('._gai-prod-prc');
+    if (priceElement && variant.price) {
+        priceElement.textContent = utils.formatMoney(variant.price);
     }
-
-    const settings = templateSettings?.carousel?.swiperConfig || {}
-    const breakpoints = Object.values(templateSettings.breakpoints).reduce(
-      (acc, curr) => ({
-        ...acc,
-        [curr.screenSize]: {
-          slidesPerView: curr.cardsPerView,
-          spaceBetween: curr.gutter,
-        },
-      }),
-      {}
-    )
-
-    const swiper = new Swiper(
-      carouselContainer,
-      utils.merge(defaultSettings, settings, { breakpoints })
-    )
-    return swiper
-  },
-
-  // Section lifecycle hooks
-  initSection: (args, cb, gloodUtils) => {
-    const { recommendation, engine, initEnginePayload } = args
-    cb({
-      recommendation,
-      engine,
-      initEnginePayload,
-    })
-  },
-
-  afterSectionRendered: (args, utils) => {},
-
-  // Product data handling
-  getProductFetchQuery: (recommendation, glood) => {
-    return `
-      featuredImage {
-        url
-      }
-      handle
-      id
-      title
-      availableForSale
-      priceRange {
-        minVariantPrice {
-          amount
-          currencyCode
-        }
-      }
-      compareAtPriceRange {
-        minVariantPrice {
-          amount
-          currencyCode
-        }
-      }
-      options(first: 10) {
-        name
-        optionValues {
-          name
-        }
-      }
-      variants(first: 250) {
-        nodes {
-          compareAtPrice {
-            amount
-            currencyCode
-          }
-          id
-          image {
-            url
-          }
-          price {
-            amount
-            currencyCode
-          }
-          currentlyNotInStock
-          title
-          quantityAvailable
-          availableForSale
-          selectedOptions {
-            name
-            value
-          }
-        }
-      }
-      images(first: 2) {
-        nodes {
-          url
-        }
-      }
-      vendor
-      variantsCount {
-        count
-      }
-      tags
-      availableForSale
-    `
-  },
-
-  mutateProductData: (product, recommendation) => {
-    return {
-      featuredImage: product.featuredImage.url ? {
-        src: product.featuredImage.url,
-      } : null,
-      handle: product.handle,
-      id: parseInt(product.id.replace('gid://shopify/Product/', '')),
-      title: product.title,
-      vendor: product.vendor,
-      images: product.images.nodes.map(image => ({
-        src: image.url,
-      })),
-      variants: product.variants.nodes.map(variant => ({
-        id: parseInt(variant.id.replace('gid://shopify/ProductVariant/', '')),
-        compareAtPrice: variant.compareAtPrice?.amount || null,
-        price: variant.price.amount,
-        image: variant.image?.url ? {
-          src: variant.image.url,
-        } : null,
-        currentlyNotInStock: variant.currentlyNotInStock,
-        title: variant.title,
-        quantityAvailable: variant.quantityAvailable,
-        availableForSale: variant.availableForSale,
-        selectedOptions: variant.selectedOptions,
-      })),
-      available: product.availableForSale,
-      compareAtPrice: product.compareAtPriceRange.minVariantPrice.amount,
-      price: product.priceRange.minVariantPrice.amount,
-      variantsCount: product.variantsCount.count,
-      tags: product.tags,
-      availableForSale: product.availableForSale,
-      options: product.options.map(option => ({
-        name: option.name,
-        optionValues: option.optionValues.map(
-          optionValue => optionValue.name
-        ),
-      })),
-    }
-  },
-
-  // Event handlers
-  onVariantChange: (args, utils) => {
-    const { variant, product, container } = args
-    // Update price, image, and availability
-  },
-
-  onSwatchChange: (args, utils) => {
-    const { swatch, product, container } = args
-    // Update selected variant based on swatch
-  },
-
-  beforeAddToCart: async (payload, recommendation, utils, gloodUtils) => {
-    return {
-      payload,
-      error: null,
-      href: false,
-    }
-  },
-
-  afterAddToCart: (args, utils, gloodUtils) => {
-    // Handle post-add to cart actions
-  }
 }
 ```
 
-### 3. Styles (`css.liquid`)
+### 3. CSS Template
 
-Defines responsive styles with breakpoint-specific configurations:
+The CSS template system provides a flexible way to style your recommendation sections. It uses Liquid templating for dynamic styling based on section settings and configuration. Both section template and CSS template have access to the same template object. For a complete reference of available objects and their structure, see [Template Objects](/for-developers/section-template/schemas#object-definitions).
 
-```liquid
-{% assign section_id = section.id %}
-{% assign settings = template.settings %}
-{% assign product_card_settings = settings.product_card %}
+#### Structure and Organization
+The CSS is organized by components and breakpoints:
+- Base styles for mobile-first approach
+- Tablet styles (default: 768px)
+- Desktop styles (default: 1024px)
 
-[data-gai-section-id="{{ section_id }}"] {
-  /* Base Container */
-  ._gai-container {
-    width: 100%;
-    max-width: var(--gai-max-width);
-    margin: 0 auto;
-    padding: var(--gai-spacing);
-  }
+**NOTE:** 
+1. The CSS follows a mobile-first approach, where base styles are written for mobile devices and then progressively enhanced for larger screens through media queries. This ensures optimal performance and maintainability while providing a solid foundation for responsive design.
+2. These breakpoint values are customizable through the template settings. For detailed configuration options, see [`settings.breakpoints[].screenSize`](/for-developers/section-template/schemas#template-object) in the Template Object documentation.
 
-  /* Grid Layout */
-  ._gai-grid {
-    display: grid;
-    grid-template-columns: repeat({{- settings.breakpoints.small.cards_per_view -}}, 1fr);
-    gap: {{ settings.breakpoints.small.gutter | default: 10 }}px;
-  }
+#### CSS Class Reference
 
-  /* Product Card */
-  ._gai-prod-card {
-    background-color: {{ product_card_settings.background_color | default: 'transparent' }};
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
+| Class Name | Purpose | Properties Controlled | Example Usage |
+|------------|---------|---------------------|---------------|
+| `._gai-grid` | Main product grid container | - Grid layout (`grid-template-columns`)<br />- Gap between items<br />- Responsive columns | Controls overall product grid layout |
+| `._gai-sec-tit` | Section title styling | - Font size<br />- Text alignment<br />- Line clamping<br />- Display properties<br />- Webkit box orientation | Main section heading appearance |
+| `._gai-prod-card` | Individual product card | - Background color<br />- Font family<br />- Max width (for bundle layout) | Container for each product |
+| `._gai-prod-img` | Product image container | - Aspect ratio<br />- Object-fit | Product image display |
+| `._gai-prod-img-wrap` | Image wrapper | - Aspect ratio | Controls image container proportions |
+| `._gai-prod-tit` | Product title | - Color<br />- Font weight<br />- Line clamping<br />- Text alignment<br />- Font size<br />- Font family | Product name styling |
+| `._gai-prod-vndr` | Vendor name | - Font size<br />- Display properties | Brand/vendor name display |
+| `._gai-prod-vndr--above-title` | Vendor name above title | - Display (block/none) | Vendor positioning above title |
+| `._gai-prod-vndr--below-title` | Vendor name below title | - Display (block/none) | Vendor positioning below title |
+| `._gai-prod-prc` | Product price | - Color<br />- Font family<br />- Font size | Main price display |
+| `._gai-prod-prc--original` | Compare-at price | - Color<br />- Display<br />- Visibility conditions | Original/compare price styling |
+| `._gai-atc-btn` | Add to cart button | - Background color<br />- Text color<br />- Border<br />- Border radius<br />- Disabled state | Add to cart button styling |
+| `._gai-dis-cnt` | Discount container | - Justification<br />- Background color<br />- Display (flex/none) | Discount information wrapper |
+| `._gai-dis-txt` | Discount text | - Color<br />- Font size | Discount amount/percentage text |
+| `._gai-dis` | Discount badge | - Background color<br />- Text color<br />- Opacity | Discount label styling |
+| `._gai-container` | Main section container | - Background color | Section wrapper styling |
+| `._gai-bundle-products` | Bundle products grid | - Grid template columns | Layout for bundled products |
+| `._gai-skl-atc` | Skeleton add to cart | - Display visibility | Loading state for add to cart |
+| `._gai-bndl-sec` | Bundle section | - Justify content | Bundle section layout |
+| `._gai-amz-tit` | Amazon bundle title | - Text alignment | Title for Amazon-style bundles |
 
-  /* Product Image */
-  ._gai-prod-img-wrap {
-    position: relative;
-    overflow: hidden;
-    aspect-ratio: {{ product_card_settings.image_aspect_ratio }};
-  }
+#### Label Classes
+Special classes for product status and badges:
 
-  ._gai-prod-img {
-    width: 100%;
-    height: 100%;
-    object-fit: {{ product_card_settings.image_object_fit }};
-  }
+| Class Name | Purpose | Customizable Properties |
+|------------|---------|------------------------|
+| `._gai-oos` | Out of stock badge | - Background color<br />- Text color |
+| `._gai-bestseller` | Bestseller badge | - Background color<br />- Text color |
+| `._gai-new` | New product badge | - Background color<br />- Text color |
+| `._gai-trending` | Trending item badge | - Background color<br />- Text color |
 
-  ._gai-sec-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+#### Responsive Behavior
+The code includes media queries for different screen sizes:
+```scss
+/* Mobile (default) */
+[data-gai-section-id="{{ section_id }}"] ._gai-grid {
+  grid-template-columns: repeat({{- settings.breakpoints.small.cards_per_view -}}, 1fr);
+  gap: {{ settings.breakpoints.small.gutter }}px;
+}
 
-  /* Product Details */
-  ._gai-prod-dtls {
-    padding: 10px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
+/* Tablet */
+@media (min-width: {{ settings.breakpoints.medium.screen_size }}px) {
+  /* Tablet-specific styles */
+}
 
-  ._gai-prod-tit {
-    color: {{ product_card_settings.title_color }};
-    font-size: {{ settings.breakpoints.small.product_title_font_size }}px;
-    text-decoration: none;
-    margin: 5px 0;
-  }
-
-  ._gai-prod-vndr {
-    color: {{ product_card_settings.vendor_color }};
-    font-size: {{ settings.breakpoints.small.vendor_font_size }}px;
-  }
-
-  /* Price Display */
-  ._gai-prod-price-wrp {
-    margin: 5px 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  ._gai-prod-prc {
-    color: {{ product_card_settings.price_color }};
-  }
-
-  ._gai-prod-prc--original {
-    color: {{ product_card_settings.price_color_compare }};
-    text-decoration: line-through;
-  }
-
-  /* Add to Cart Button */
-  ._gai-atc-btn {
-    background-color: {{ product_card_settings.add_to_cart_background }};
-    color: {{ product_card_settings.add_to_cart_color }};
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    position: relative;
-    margin-top: auto;
-  }
-
-  ._gai-atc-btn:disabled {
-    background-color: {{ product_card_settings.disabled_add_to_cart_background }};
-    cursor: not-allowed;
-  }
-
-  /* Labels and Badges */
-  ._gai-lbls-grp {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  ._gai-pill {
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-  }
-
-  /* Responsive Breakpoints */
-  @media (min-width: {{ settings.breakpoints.medium.screen_size | default: 768 }}px) {
-    ._gai-grid {
-      grid-template-columns: repeat({{- settings.breakpoints.medium.cards_per_view -}}, 1fr);
-      gap: {{ settings.breakpoints.medium.gutter }}px;
-    }
-
-    ._gai-prod-tit {
-      font-size: {{ settings.breakpoints.medium.product_title_font_size }}px;
-    }
-  }
-
-  @media (min-width: {{ settings.breakpoints.large.screen_size | default: 1024 }}px) {
-    ._gai-grid {
-      grid-template-columns: repeat({{- settings.breakpoints.large.cards_per_view -}}, 1fr);
-      gap: {{ settings.breakpoints.large.gutter }}px;
-    }
-
-    ._gai-prod-tit {
-      font-size: {{ settings.breakpoints.large.product_title_font_size }}px;
-    }
-  }
+/* Desktop */
+@media (min-width: {{ settings.breakpoints.large.screen_size }}px) {
+  /* Desktop-specific styles */
 }
 ```
-
-### 4. Settings (`settings.json`)
-
-Complete configuration options for the template:
-
-```json
-{
-  "breakpoints": {
-    "small": {
-      "gutter": 10,
-      "cardsPerView": 2,
-      "widgetTitleAlignment": "left",
-      "productTitleAlignment": "left",
-      "comparePriceVisible": false,
-      "imageWidth": 300,
-      "imageHeight": 300,
-      "justifyWidgetSubtitle": "left"
-    },
-    "medium": {
-      "gutter": 20,
-      "cardsPerView": 3,
-      "widgetTitleAlignment": "center",
-      "productTitleAlign": "center",
-      "comparePriceVisible": true,
-      "imageWidth": 300,
-      "imageHeight": 300,
-      "justifyWidgetSubtitle": "center"
-    },
-    "large": {
-      "gutter": 20,
-      "cardsPerView": 4,
-      "widgetTitleAlignment": "center",
-      "productTitleAlign": "center",
-      "comparePriceVisible": true,
-      "imageWidth": 300,
-      "imageHeight": 300,
-      "justifyWidgetSubtitle": "center"
-    }
-  },
-  "labels": [
-    {
-      "name": "new",
-      "textColor": "#ffffff",
-      "backgroundColor": "#333333"
-    },
-    {
-      "name": "trending",
-      "textColor": "#ffffff",
-      "backgroundColor": "#444444"
-    },
-    {
-      "name": "bestseller",
-      "textColor": "#ffffff",
-      "backgroundColor": "#222222"
-    }
-  ],
-  "maxLabelsCount": 2,
-  "outOfStock": {
-    "textColor": "#ffffff",
-    "backgroundColor": "#000"
-  },
-  "carousel": {
-    "library": "swiper",
-    "showPagination": true
-  },
-  "productCard": {
-    "color": "#222",
-    "priceColor": "#222",
-    "titleColor": "#222",
-    "discountColor": "#000",
-    "vendorPosition": "hidden",
-    "addToCartMode": "card_hover",
-    "backgroundColor": "transparent",
-    "discountVisible": true,
-    "imageHoverMode": "secondary",
-    "imageObjectFit": "contain",
-    "addToCartColor": "#fff",
-    "imageAspectRatio": "1:1",
-    "showDiscountPill": true,
-    "discountBackground": "transparent",
-    "priceColorCompare": "#aaa",
-    "discountLabelColor": "#ffffff",
-    "priceColorOriginal": "#5C5C5C",
-    "priceCompareAtMode": "before",
-    "addToCartBackground": "#000",
-    "showQuantitySelector": false,
-    "discountLabelVisible": true,
-    "discountLabelPosition": "center",
-    "discountLabelBackground": "#ff0000",
-    "redirectAfterAddToCart": false,
-    "variantSelectorType": "integrated",
-    "comparePriceVisibilityMobile": "before",
-    "disabledAddToCartBackground": "#00000070",
-    "disableAddToCartButton": false
-  },
-  "colorMapping": {},
-  "horizontalGrid": {},
-  "amazonBoughtTogether": {
-    "priceCompareAtMode": "before",
-    "buttonBackgroundColor": "#000"
-  },
-  "swatches": [
-    {
-      "type": "color",
-      "key": "color",
-      "optionNames": [
-        "Color",
-        "Colour",
-        "color",
-        "colour"
-      ]
-    },
-    {
-      "type": "size",
-      "key": "size",
-      "optionNames": [
-        "Size",
-        "sizes"
-      ]
-    }
-  ]
-}
-```
-
-## Product Card Features
-
-### 1. Image Display
-- Responsive image sizing
-- Secondary image hover effect
-- Aspect ratio control
-- Object-fit options
-
-### 2. Variant Selection
-- Integrated selector
-- Color swatches
-- Size swatches
-- Quantity selector
-
-### 3. Price Display
-- Compare at price
-- Sale price
-- Discount badges
-- Savings text
-
-### 4. Add to Cart
-- Multiple modes (hover/fixed)
-- Loading states
-- Error handling
-- Success feedback
-
-## Layout Options
-
-### 1. Horizontal Grid
-```liquid
-<ul class="_gai-grid">
-  {% for product in products %}
-    <li class="_gai-grid-item">
-      <!-- Product card markup -->
-    </li>
-  {% endfor %}
-</ul>
-```
-
-### 2. Carousel
-```liquid
-<div class="_gai-crz-cnt swiper">
-  <div class="swiper-wrapper">
-    {% for product in products %}
-      <!-- Product card markup -->
-    {% endfor %}
-  </div>
-  <div class="_gai-crz-p-btn"><!-- Previous button --></div>
-  <div class="_gai-crz-n-btn"><!-- Next button --></div>
-  {% if template.settings.carousel.show_pagination %}
-    <div class="_gai-crz-pag"></div>
-  {% endif %}
-</div>
-```
-
-### 3. Amazon-style Layout
-```liquid
-<div class="_gai-bndl-sec">
-  <div class="_gai-bundle-products">
-    {% for product in products %}
-      <!-- Product card with checkbox -->
-    {% endfor %}
-  </div>
-  <div class="_gai-amz-details">
-    <!-- Bundle pricing and add to cart -->
-  </div>
-</div>
-```
-
-## Best Practices
-
-### 1. CSS Class Naming
-- Use `_gai-` prefix for all classes
-- Follow BEM methodology
-- Use semantic naming
-
-### 2. Performance
-- Lazy load images
-- Optimize image dimensions
-- Use CSS transforms
-- Debounce event handlers
-
-### 3. Accessibility
-- Semantic HTML structure
-- ARIA attributes
-- Keyboard navigation
-- Color contrast
-
-### 4. Responsive Design
-- Mobile-first approach
-- Breakpoint-specific settings
-- Fluid typography
-- Flexible layouts
 
 ## Support
 

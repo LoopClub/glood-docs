@@ -1,194 +1,240 @@
 ---
 title: 'Filters'
-description: 'Learn about available filters for customizing product recommendations'
+description: 'Reference for custom Liquid filters available in section templates'
 ---
 
-# Section Template Filters
 
-Filters in Glood.AI section templates allow you to customize how product data is displayed and manipulated within your templates.
+## format_money
 
-## Available Filters
-
-### URL and Navigation Filters
-
-#### tracking_url
-Builds a product URL with tracking parameters.
+**Description:**  
+Formats numeric values into the store's currency format based on the money_format setting from the glood object.
 
 **Parameters:**
-- `section` (Object): Section configuration
-- `ref_product_id` (String, optional): Reference product ID for tracking
+- `value` (Number/String): The numeric price value to be formatted
+- `money_format` (String): Override default money format
+
+**Returns:**  
+String - Formatted price string with currency symbol
 
 **Example:**
 ```liquid
-{{ '' | tracking_url: section, ref_product_id: product.id }}
+{{ 19.99 | format_money }}  →  "$19.99"
+{{ product.price | format_money: money_format: shop.money_format }}  →  "$29.99"
 ```
 
-### Discount Filters
+**Use Cases:**
+- Formatting product prices
+- Displaying compare at prices
+- Showing discount amounts
+- Bundle total prices
 
-#### section_discount
-Returns formatted section-level discount text.
+## optimize_image
+
+**Description:**  
+Optimizes and resizes images for better performance using CDN parameters.
 
 **Parameters:**
-- `money_format` (String): Shop's money format
-- `locale` (String): Current locale for translations
+- `url` (String): The original image URL to be optimized
+- `width` (Number, optional): Desired image width
+- `height` (Number, optional): Desired image height
+- `crop` (String, optional): Crop mode for the image
+
+**Returns:**  
+String - Optimized image URL with CDN parameters
 
 **Example:**
 ```liquid
-{{ section | section_discount: money_format: shop.money_format, locale: current_locale }}
+{{ product.featured_image.src | optimize_image: width: 300, height: 300 }}
+{{ product.image | optimize_image: width: 600, height: 600, crop: 'center' }}
 ```
 
-#### discount_text
-Returns combined product and section discount text.
+**Use Cases:**
+- Product card images
+- Responsive image loading
+- Thumbnail generation
+- Banner image optimization
+
+## product_url
+
+**Description:**  
+Generates a complete product URL with tracking parameters and localization.
 
 **Parameters:**
-- `product` (Object): Product data
-- `section` (Object): Section configuration
-- `translations` (Object): Translation strings
-- `money_format` (String): Shop's money format
+- `handle` (String, required): Product handle/slug
+- `ref_product_id` (String, optional): Reference product ID
+- `layout` (String, optional): Section layout type
+
+**Returns:**  
+String - Complete product URL with parameters
 
 **Example:**
 ```liquid
-{{ '' | discount_text: product, section, translations, money_format: shop.money_format }}
+{% assign url = root_url | product_url: product.handle, glood.product.id, section.layout %}
+<a href="{{ url }}">{{ product.title }}</a>
 ```
 
-#### savings_text
-Returns formatted savings text for a product.
+**Use Cases:**
+- Product link generation
+- Navigation building
+- Tracking implementation
+- Multi-language support
+
+## product_discount
+
+**Description:**  
+Calculates and formats product discount information based on configuration.
 
 **Parameters:**
-- `product` (Object): Product data
-- `section` (Object): Section configuration
-- `translations` (Object): Translation strings
-- `money_format` (String): Shop's money format
+- `discount_config` (Object, required): Discount configuration settings
+- `label_text` (String, required): Template for discount label
+- `money_format` (String, required): Store's money format
+
+**Returns:**  
+String - Formatted discount text
 
 **Example:**
 ```liquid
-{{ '' | savings_text: product, section, translations, money_format: shop.money_format }}
+{% assign discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format %}
+<span class="discount">{{ discount }}</span>
 ```
 
-### Formatting Filters
+**Use Cases:**
+- Sale badges
+- Discount displays
+- Price comparison
+- Promotional messaging
 
-#### money
-Formats price according to shop's money format.
+## save_amount
+
+**Description:**  
+Calculates and formats savings information based on discount configuration.
 
 **Parameters:**
-- `money_format` (String): Shop's money format
+- `discount_config` (Object, required): Discount configuration settings
+- `save_text` (String, required): Template for savings text
+- `money_format` (String, required): Store's money format
+
+**Returns:**  
+String - Formatted savings text
 
 **Example:**
 ```liquid
-{{ product.price | money: money_format: shop.money_format }}
+{{ product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format }}
 ```
 
-### Style and Display Filters
+**Use Cases:**
+- Savings displays
+- Discount comparison
+- Promotional messaging
 
-#### color
-Maps color names to valid CSS colors.
+## color_value
+
+**Description:**  
+Retrieves color code from a color map object.
 
 **Parameters:**
-- `settings` (Object): Section settings containing color mappings
+- `color_mapping` (Object, required): Color map object
+
+**Returns:**  
+String - Color code
 
 **Example:**
 ```liquid
-{{ variant.color | color: template.settings }}
+{{ value | color_value: template.settings.color_mapping }}
 ```
 
-#### optimize_image
-Optimizes image URL based on screen size and settings.
+**Use Cases:**
+- Theme customization
+- Product attribute mapping
+- UI element styling
+
+## to_boolean
+
+**Description:**  
+Converts any value to a boolean.
 
 **Parameters:**
-- `client_width` (Number): Client screen width
-- `settings` (Object): Section settings containing breakpoint configurations
+- None
+
+**Returns:**  
+Boolean - True or False
 
 **Example:**
 ```liquid
-{{ product.image | optimize_image: client_width: client_info.client_width, settings: template.settings }}
+<span data-selected="{{ selected_option.value == value | to_boolean }}">
 ```
 
-## Using Filters in Templates
+**Use Cases:**
+- Conditional rendering
+- Boolean logic
+- UI state management
 
-Here's an example of using multiple filters together:
+## image_dimensions
 
+**Description:**  
+Calculates responsive image dimensions based on template breakpoint settings.
+
+**Parameters:**
+- `breakpoints` (Object, required): Template breakpoint settings
+
+**Returns:**  
+Object - Object containing calculated dimensions
+
+**Example:**
 ```liquid
-<div class="product-card">
-  <a href="{{ '' | tracking_url: section, ref_product_id: product.id }}">
-    <img 
-      src="{{ product.featured_image | optimize_image: client_width: client_info.client_width, settings: template.settings }}" 
-      alt="{{ product.title }}"
-      width="{{ image_dim.image_width }}"
-      height="{{ image_dim.image_height }}"
-    >
-    <h3>{{ product.title }}</h3>
-    <div class="price">{{ product.price | money: money_format: shop.money_format }}</div>
-    <div class="discount">{{ '' | discount_text: product, section, translations, money_format: shop.money_format }}</div>
-    <div class="savings">{{ '' | savings_text: product, section, translations, money_format: shop.money_format }}</div>
-  </a>
-</div>
+{{ client_info.client_width | image_dimensions: template.settings.breakpoints }}
 ```
 
-## Filter Options
+**Use Cases:**
+- Responsive image loading
+- UI element sizing
+- Image optimization
 
-### Money Format Options
-The money filter respects the shop's configured format, including:
-- Currency symbol position
-- Decimal separator
-- Thousands separator
-- Number of decimal places
+## default
 
-### Image Optimization Options
-The optimize_image filter considers:
-- Screen width breakpoints
-- Desired image dimensions
-- Device pixel ratio
-- Image format support
+**Description:**  
+Provides a default value if the input is null, undefined or empty.
 
-### Color Mapping Options
-Color mapping supports:
-- Custom color name mappings in settings
-- CSS color names
-- Hex codes
-- RGB/RGBA values
-- HSL/HSLA values
+**Parameters:**
+- `default_value` (Any, required): Value to use if input is empty
 
-## Best Practices
+**Returns:**  
+Any - Original value or default value
 
-1. Always provide required parameters for each filter
-2. Use appropriate image dimensions for different viewports
-3. Test money formatting with different currencies and formats
-4. Validate color values before mapping
-5. Cache filtered values when possible
-6. Consider performance impact of complex filters
+**Example:**
+```liquid
+{{ template.settings.product_card.min_quantity | default: 1 }}
+{{ translations.oos_text | default: 'Out of stock' }}
+```
+
+**Use Cases:**
+- Setting default quantities
+- Fallback text
+- Configuration defaults
+- Error prevention
 
 ## Error Handling
 
-Each filter includes built-in error handling:
+| Error | Description | Solution |
+|-------|-------------|----------|
+| Invalid Price Format | Price value is null or not a number | 1. Use the default filter to set a fallback value (0)<br />2. Apply money filter to format the price |
+| Missing Image Dimensions | Width/height not specified for image optimization | 1. Always specify width and height parameters<br />2. Use default dimensions (300x300) if not provided |
+| Invalid Tracking Parameters | Missing required section context | 1. Check if section ID exists<br />2. Verify product handle is present<br />3. Fall back to standard product URL if missing |
+| Invalid Discount Configuration | Missing money format or invalid discount structure | 1. Ensure shop money format is provided<br />2. Validate discount configuration before applying |
 
-1. **tracking_url**
-   - Returns original URL if section or product data is missing
-   - Handles missing reference product ID gracefully
+These errors require proper handling to:
+- Prevent template rendering failures
+- Maintain consistent price display
+- Ensure proper image loading
+- Keep tracking functionality intact
 
-2. **section_discount**
-   - Returns empty string if discount configuration is disabled
-   - Falls back to primary locale if translation is missing
+## Notes
 
-3. **discount_text**
-   - Returns empty string if required parameters are missing
-   - Handles missing price values safely
-
-4. **savings_text**
-   - Returns empty string if no savings available
-   - Handles missing translations gracefully
-
-5. **money**
-   - Returns empty string if price or format is missing
-   - Handles invalid price values safely
-
-6. **color**
-   - Returns original value if color mapping is not found
-   - Validates color values before returning
-
-7. **optimize_image**
-   - Returns original URL if required parameters are missing
-   - Falls back to default breakpoint if no matching breakpoint found
+- All filters are available in both section templates and CSS templates
+- Some filters require specific objects from the template context
+- Filter parameters marked as required must be provided for the filter to work correctly
+- See [Object Definitions](/for-developers/section-template/schemas#object-definitions) for details about input objects
 
 ## Support
 
-For questions about filters or custom filter development, contact our support team at support@glood.ai 
+For help with template customization or troubleshooting, contact our support team at support@glood.ai 

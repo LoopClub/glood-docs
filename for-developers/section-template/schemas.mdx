@@ -1,0 +1,305 @@
+--- 
+title: "Object Definitions" 
+description: "Definition of Objects available in the section template." 
+---
+
+## Understanding Core Components
+The template system uses seven essential building blocks that work together:
+
+1. `glood` - Global store configuration
+2. `products` - Product data management
+3. `translations` - Multi-language support
+4. `section` - Layout and behavior control
+5. `template` - Appearance and styling settings
+6. `clientInfo` - Device and viewport information
+7. `config` - Integration and feature management
+
+## `glood` Object
+The global object contains the store information required by the glood application to work properly on your store.
+
+### Purpose and Usage
+The glood object provides essential store information and configuration settings that are used throughout the template. It's particularly important for:
+- Building correct store URLs
+- Formatting prices according to store settings
+- Handling localization
+
+### Properties Reference
+
+### Core Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `shopify.root_url` | string | Base URL of the Shopify store | "/" |
+
+
+### Localization Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `localization.language.locale` | string | Language code | "en" |
+| `localization.language.primary` | boolean | Whether this is primary language | true |
+| `localization.language.root_url` | string | Base URL for language | "/" |
+| `localization.country` | string | Country code | "IN" |
+| `localization.currency` | string | Currency code | "INR" |
+
+### Market Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `market.id` | string | Unique market identifier | "27455750381" |
+| `market.handle` | string | Market handle | "in" |
+
+### Shop Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `shop.domain` | string | Store's domain | "adarsh-test2-store.myshopify.com" |
+| `shop.id` | string | Shop identifier | "73540239597" |
+| `shop.products_count` | number | Total number of products | 15 |
+| `shop.currency_rate` | string | Currency conversion rate | "1.0" |
+| `shop.money_format` | string | Store's currency format | `"Rs. \{\{amount\}\}"` |
+| `shop.currency_code` | string | Store's currency code | "INR" |
+
+### Product Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `product.id` | number | Current product identifier | 8925145628909 |
+| `product.title` | string | Product title | "(Sample) Coconut Bar Soap" |
+| `product.handle` | string | Product handle | "soap" |
+| `product.available` | boolean | Product availability status | true |
+| `product.price` | number | Product price | 2000 |
+| `product.vendor` | string | Product vendor | "adarsh-test2-store" |
+| `product.type` | string | Product type | "" |
+
+### Cart Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `cart.currency` | string | Cart currency | "INR" |
+| `cart.item_count` | number | Number of items in cart | 16 |
+| `cart.total_price` | number | Total cart price | 752945 |
+| `cart.requires_shipping` | boolean | Whether cart requires shipping | true |
+| `cart.total_weight` | number | Total cart weight | 250 |
+
+### Config Properties
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `config.page_type` | string | Type of current page | "product" |
+| `config.page_url` | string | Current page URL | "adarsh-test2-store.myshopify.com/products/soap" |
+| `config.uid` | string | Unique identifier | "1737978965-cd63b5e8-9f99-4519-a4bc-b0dac71ccead" |
+
+**NOTE:** 
+1. All property keys are automatically converted to snake_case when used in Liquid templates. For example:
+- `rootUrl` → `root_url`
+- `devicePixelRatio` → `device_pixel_ratio`
+- `moneyFormat` → `money_format`
+
+2. If you want to get the content of glood object, you can access it through `window.glood` inside your store.
+
+
+Example usage in Liquid:
+```liquid
+{{ glood.shop.money_format }}
+{{ glood.localization.language.root_url }}
+```
+
+## `products` Array
+The products array is a fundamental component that manages product data in the template system.
+
+### Purpose and Usage
+The products array is responsible for:
+- Managing the collection of products to be displayed
+- Handling product data organization
+- Controls variant and option configurations
+- Managing pricing and inventory information
+- Providing media assets for product display
+
+### Properties Reference
+
+| Key | Type | Description | Example |
+|-----|------|-------------|---------|
+| `id` | number | Product identifier | 8925145628909 |
+| `title` | string | Product name | "Coconut Bar Soap" |
+| `handle` | string | Product URL handle | "coconut-bar-soap" |
+| `vendor` | string | Product vendor name | "Natural Essentials" |
+| `tags` | array | Product tags | ["new", "organic", "bestseller"] |
+| `featured_image.src` | string | Main product image URL | "https://cdn.shopify.com/s/files/1/soap.jpg" |
+| `images[].src` | string | Additional image URLs | ["https://cdn.shopify.com/s/files/1/soap-1.jpg"] |
+| `variants` | array | Product variants | [See variant example below] |
+| `variants[].id` | string | Variant identifier | "40468007231725" |
+| `variants[].title` | string | Variant title | "Small / Blue" |
+| `variants[].available_for_sale` | boolean | Stock availability | true |
+| `variants[].price` | string | Variant price | "19.99" |
+| `variants[].compare_at_price` | string | Original price | "24.99" |
+| `variants[].image.src` | string | Variant image URL | "https://cdn.shopify.com/s/files/1/blue-soap.jpg" |
+| `variants[].selected_options` | array | Selected variant options | [See options example below] |
+| `variants[].selected_options[].name` | string | Option name | "Size" |
+| `variants[].selected_options[].value` | string | Option value | "Small" |
+| `options` | array | Product options | [See options example below] |
+| `options[].name` | string | Option name | "Size" |
+| `options[].option_values` | array | Available option values | ["Small", "Medium", "Large"] |
+| `show_compare_price` | boolean | Show compare at price | true |
+| `first_variant` | object | First available variant | [See variant example above] |
+
+**NOTE:** Product array structure is not fixed and it can be changed. If you want to change product array, you can visit the [transformProductData hook](/for-developers/section-template/hooks#4-transformproductdata) in the hooks section.
+
+## `translations` Object
+The translations object manages multi-language support and customizable text throughout the template.
+
+### Purpose and Usage
+The translations object serves multiple purposes:
+- Provides language-specific text content
+- Enables customizable UI messages
+- Supports fallback text handling
+
+### Properties Reference
+
+| Key | Type | Description | Default Value |
+|-----|------|-------------|---------------|
+| `oos_text` | string | Out of stock message | "Out of stock" |
+| `added_to_cart_text` | string | Success message for cart addition | "Added to cart" |
+| `atc_error_text` | string | Error message for cart addition | "Error adding to cart" |
+| `atc_text` | string | Add to cart button text | "Add to cart" |
+| `total_price_text` | string | Total price label | "Total price" |
+| `fbt_add_to_cart_text` | string | Bundle add to cart text | "Add bundle to cart" |
+| `fbt_added_to_cart_text` | string | Bundle success message | "Bundle added to cart" |
+| `discount_label_text` | string | Discount label text | "Save {discount}" |
+| `discount_save_text` | string | Savings amount text | "Save {amount}" |
+| `fbt_save_text` | string | Bundle savings text | "Save {amount} with this bundle" |
+| `new` | string | New product badge text | "New" |
+| `trending` | string | Trending product badge text | "Trending" |
+| `bestseller` | string | Bestseller badge text | "Bestseller" |
+
+**NOTE:** The `new`, `trending`, and `bestseller` translations are used to display text inside badge on product cards. These badges help highlight product status or popularity to customers. The badges will automatically appear on products based on their tags or other criteria set in the template settings.
+
+## `section` Object
+The section object controls how your recommendation section is structured and behaves.
+
+### Purpose and Usage
+The section object is crucial for:
+- Defining the section's basic structure
+- Managing product display layouts
+- Controlling interactive features
+- Setting up titles and descriptions
+- Handling responsive behaviors
+
+### Properties Reference
+
+| Key | Type | Description | Example |
+|-----|------|-------------|---------|
+| `id` | number | Unique section identifier | 12345 |
+| `layout` | string | Section layout type | "horizontal_grid" |
+| `location` | string | Section placement location | "product_page" |
+| `position` | number | Section position order | 1 |
+| `title` | string | Section heading text | "You May Also Like" |
+| `template` | string | Template identifier | "default" |
+| `extra` | object | Additional section configuration | `{"maxProducts":4}` |
+| `discount_config` | object | Discount settings | `{"type":"percentage","value":20}` |
+| `show_discount_label` | boolean | Display discount labels | true |
+| `translations` | object | Section-specific translations | `{"discount_text":"Save"}` |
+| `template_v3` | boolean | Using template version 3 | true |
+| `section_serve_id` | string | Unique serve identifier | "s-12345-abcd-9876" |
+| `page_type` | string | Page section appears on | "product" |
+
+## `template` Object
+The template object is your control center for visual styling and responsive behavior.
+
+### Purpose and Usage
+The template object is responsible for:
+- Managing responsive breakpoints
+- Controlling visual styling
+- Handling product card appearance
+- Managing interactive behaviors
+- Implementing custom themes
+
+### Properties Reference
+
+| Key | Type | Description | Example | Default Value |
+|-----|------|-------------|---------|---------------|
+| `settings.breakpoints.small` | object | Mobile device settings | See breakpoint example | {} |
+| `settings.breakpoints.medium` | object | Tablet device settings | See breakpoint example | {} |
+| `settings.breakpoints.large` | object | Desktop device settings | See breakpoint example | {} |
+| `settings.breakpoints[].cardsPerView` | number | Number of cards per row | `2` (mobile), `3` (tablet), `4` (desktop) | 4 |
+| `settings.breakpoints[].gutter` | number | Space between cards in pixels | `10` (mobile), `20` (desktop) | 20 |
+| `settings.breakpoints[].justifyWidgetTitle` | enum | Title alignment | `"left"`, `"center"`, `"right"` | "left" |
+| `settings.breakpoints[].widgetTitleAlignment` | string | Widget title positioning | `"left"`, `"center"`, `"right"` | "left" |
+| `settings.breakpoints[].productTitleAlignment` | string | Product title alignment | `"left"`, `"center"`, `"right"` | "left" |
+| `settings.breakpoints[].comparePriceVisible` | boolean | Show/hide compare price | `true`, `false` | false |
+| `settings.breakpoints[].imageWidth` | number | Product image width | `300` | 300 |
+| `settings.breakpoints[].imageHeight` | number | Product image height | `300` | 300 |
+| `settings.breakpoints[].screenSize` | number | Breakpoint width threshold | `768` | 768 |
+| `settings.breakpoints[].maxSectionTitleRows` | number | Maximum section title rows | `2` | 2 |
+| `settings.breakpoints[].maxProductTitleRows` | number | Maximum product title rows | `2` | 2 |
+| `settings.breakpoints[].widgetTitleFontSize` | number | Section title font size | `24` | 24 |
+| `settings.breakpoints[].productTitleFontSize` | number | Product title font size | `16` | 16 |
+| `settings.breakpoints[].productVendorFontSize` | number | Vendor name font size | `14` | 14 |
+| `settings.product_card.vendorPosition` | enum | Vendor position | `"above"`, `"below"`, `"hidden"` | hidden |
+| `settings.product_card.addToCartMode` | enum | Add to cart behavior | `"card_hover"`, `"image_hover"`, `"fix"` | card_hover |
+| `settings.product_card.imageHoverMode` | enum | Image hover effect | `"secondary"`, `"zoom"`, `"none"` | secondary |
+| `settings.product_card.imageObjectFit` | enum | Image fitting mode | `"contain"`, `"cover"` | contain |
+| `settings.product_card.priceCompareMode` | enum | Compare price position | `"before"`, `"after"`, `"hidden"` | before |
+| `settings.product_card.discountLabelPosition` | enum | Discount badge position | `"left"`, `"right"`, `"center"` | center |
+| `settings.product_card.variantSelectorType` | enum | Variant selection UI | `"integrated"`, `"selector"`, `"swatch"` | integrated |
+| `settings.product_card.showQuantitySelector` | boolean | Show quantity selector | `true`, `false` | false |
+| `settings.product_card.minQuantity` | number | Minimum order quantity | `1` |  |
+| `settings.product_card.maxQuantity` | number | Maximum order quantity | `10` |  |
+| `settings.product_card.imageAspectRatio` | string | Image aspect ratio | `"1:1"` |  |
+| `settings.product_card.showVendor` | boolean | Show/hide vendor name | `true` |  |
+| `settings.product_card.maxTitleLines` | number | Maximum product title lines | `2` |  |
+| `settings.product_card.showDiscountPill` | boolean | Show/hide discount badge | `true` |  |
+| `settings.labels` | array | Product label configurations | See labels example |  |
+| `settings.labels[].name` | string | Label name | `"new"`, `"sale"` |  |
+| `settings.labels[].textColor` | string | Label text color | `"#ffffff"` |  |
+| `settings.labels[].backgroundColor` | string | Label background color | `"#ff0000"` |  |
+| `settings.maxLabelsCount` | number | Maximum labels to show | `2` |  |
+| `settings.swatches` | array | Swatch configurations | See swatches example |  |
+| `settings.swatches[].type` | enum | Swatch type | `"color"`, `"size"` |  |
+| `settings.swatches[].key` | string | Option key to match | `"color"`, `"size"` |  |
+| `settings.swatches[].optionNames` | array | Valid option names | `["Color", "Colour"]` |  |
+| `settings.carousel.library` | string | Carousel library to use | `"swiper"` |  |
+| `settings.carousel.showPagination` | boolean | Show carousel pagination | `true`, `false` | false |
+| `settings.amazon_bought_together.priceCompareAtMode` | enum | Bundle price compare mode | `"before"`, `"after"` | before |
+| `settings.amazon_bought_together.buttonBackgroundColor` | string | Bundle button background | `"#000000"` |  |
+| `translations` | object | Section-specific translations | See translations object |  |
+
+**NOTE:** 
+1. `addToCartMode` behavior options:
+   - `card_hover`: Add to cart button slides up from the bottom of the card when hovering over the product card
+   - `image_hover`: Add to cart button appears over the product image on hover
+   - `fix`: Add to cart button is always visible below the product details
+
+2. The `translations` key in this table refers to the same structure as the [translations object](/for-developers/section-template/schemas#translations-object).
+
+## `clientInfo` Object
+The clientInfo object provides information about the client's device and viewport settings.
+
+### Purpose and Usage
+The clientInfo object is essential for:
+- Responsive design decisions
+- Image optimization
+
+### Properties Reference
+
+| Key | Type | Description | Example |
+|-----|------|-------------|---------|
+| `clientWidth` | number | Current viewport width in pixels | 1440 |
+| `clientHeight` | number | Current viewport height in pixels | 900 |
+| `devicePixelRatio` | number | Device pixel ratio for image optimization | 2 |
+| `userAgent` | string | Browser's user agent string | "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" |
+
+## `config` Object
+The config object manages global configuration settings for the recommendation section.
+
+### Purpose and Usage
+The config object controls:
+- Integration enablement and management
+- Third-party app configurations
+- Feature availability
+- App-specific settings
+
+### Properties Reference
+
+| Key | Type | Description | Possible Values |
+|-----|------|-------------|---------|
+| `config.integrations_enabled` | array | List of enabled integration slugs | `["judge_me", "loox", "stamped", "rivyo", "okendo", "ali", "ssw", "ryviu", "spr", "lai", "junip"]` |
+| `config.product_review_app` | string | Selected product review app name | `"judge_me", "loox", "stamped", "rivyo", "okendo", "ali", "ryviu", "lai", "junip" (or none if not using reviews)` |
+| `config.swatch_app` | string | Selected swatch app name | `"variant_options_swatch_king", "csp" (or none if not using swatches)` |
+
+## Support
+
+For help with template customization or troubleshooting, contact our support team at support@glood.ai 
