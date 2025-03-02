@@ -109,6 +109,13 @@
             "for-developers/section-template/tags",
             "for-developers/section-template/hooks"
           ]
+        },
+        {
+          "group": "How to guides",
+          "pages": [
+            "for-developers/how-to-guides/introduction",
+            "for-developers/how-to-guides/add-sections-to-mini-cart"
+          ]
         }
       ]
     },
