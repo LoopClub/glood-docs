@@ -538,6 +538,57 @@ Processes raw product data before transformation and rendering.
 **Returns:**  
 void 
 
+### 11. loadAjaxCart
+**Purpose:**  
+Determines when to load the AJAX cart section by checking if the AJAX cart is active.
+
+**Parameters:**
+
+1. `bodyElem` (HTMLElement):
+   - The document body element
+   - Provides access to AJAX cart state
+
+**Returns:**  
+`Boolean` - True if AJAX cart is active and should be loaded
+
+**Example:**
+```javascript
+loadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('cart-drawer');
+    return ajaxCart.classList.contains("active");
+}
+```
+
+**Use Cases:**
+- Update recommendations dynamically when products are added to cart
+
+### 12. unloadAjaxCart
+**Purpose:**  
+Determines when to unload the AJAX cart section by checking if the AJAX cart is inactive.
+
+**Parameters:**
+
+1. `bodyElem` (HTMLElement):
+   - The document body element
+   - Provides access to AJAX cart state
+
+**Returns:**  
+`Boolean` - True if AJAX cart is inactive and should be unloaded
+
+**Example:**
+```javascript
+unloadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('cart-drawer');
+    return !ajaxCart.classList.contains("active");
+}
+```
+
+**Use Cases:**
+- Control AJAX cart unloading timing
+- Clean up cart resources
+- Manage AJAX cart states
+- Handle cart closure events
+
 ## Hook Dependencies
 
 ### Required Utils
