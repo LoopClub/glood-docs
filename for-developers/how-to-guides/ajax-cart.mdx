@@ -1,0 +1,66 @@
+This guide walks you through the process of adding Glood.AI product recommendations to your store's mini cart (also known as AJAX cart).
+
+## Overview
+
+AJAX cart recommendations appear when customers view their cart in a slide-out drawer or popup. These recommendations update dynamically as customers add or remove items from their cart.
+
+## Implementation Steps
+
+### 1. Create AJAX Section
+
+First, create a new section in your Glood.AI dashboard:
+
+1. Go to **Sections** in your Glood.AI admin
+2. Click **Create New Section**
+3. Select **AJAX Cart** as the page type
+4. Configure your desired recommendation strategy
+5. Save the section
+
+### 2. Place Section in Mini Cart
+
+Add the section html (from section details page) to your theme's mini cart template:
+
+### 3. Configure Load/Unload Hooks
+
+To control when the AJAX cart recommendations load and unload, implement these hooks in your section template:
+
+```js
+// Load recommendations when mini cart opens
+loadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('cart-drawer');
+    return ajaxCart.classList.contains("active");
+},
+
+// Unload recommendations when mini cart closes
+unloadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('cart-drawer');
+    return !ajaxCart.classList.contains("active");
+}
+```
+
+## Testing
+
+To verify your implementation:
+
+1. Add an item to your cart
+2. Open the mini cart
+3. Verify that recommendations appear
+4. Close the mini cart
+5. Verify that recommendations are removed
+6. Test with different cart contents to ensure recommendations update
+
+## Troubleshooting
+
+Common issues and solutions:
+
+- **Recommendations don't load**: Verify your section ID and ensure the mini cart element selector matches your theme
+- **Recommendations don't update**: Check that loadAjaxCart and unloadAjaxCart hooks are properly configured
+- **Performance issues**: Consider adjusting the number of recommended products shown
+
+## Next Steps
+
+- Customize the recommendation layout to match your theme
+- Add tracking to measure recommendation performance
+- Configure product filtering rules
+
+For more details on hooks and configuration options, see the [Template Hooks](/for-developers/section-template/hooks) documentation. 
