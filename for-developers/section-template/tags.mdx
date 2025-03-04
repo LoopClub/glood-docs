@@ -11,7 +11,7 @@ Tags in Glood.AI section templates provide additional functionality and integrat
 
 ### Product Review Integration
 
-#### product_review_app_integration
+#### product_ratings
 Integrates product reviews from supported review apps.
 
 **Parameters:**
@@ -23,7 +23,7 @@ Integrates product reviews from supported review apps.
 
 **Example:**
 ```liquid
-{% product_review_app_integration product_id: product.id %}
+{% product_ratings product_id: product.id %}
 ```
 
 **Output Examples:**
@@ -49,7 +49,7 @@ Here's an example of using tags in a product card:
   <div class="price">{{ product.price | money_formatter: glood }}</div>
   
   <div class="reviews">
-    {% product_review_app_integration product_id: product.id %}
+    {% product_ratings product_id: product.id %}
   </div>
 </div>
 ```

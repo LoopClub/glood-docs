@@ -19,7 +19,7 @@ String - Formatted price string with currency symbol
 **Example:**
 ```liquid
 {{ 19.99 | format_money }}  →  "$19.99"
-{{ product.price | format_money: money_format: shop.money_format }}  →  "$29.99"
+{{ product.price | format_money: glood.shop.money_format  }}  →  "$29.99"
 ```
 
 **Use Cases:**

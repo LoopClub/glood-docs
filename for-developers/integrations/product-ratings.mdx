@@ -1,0 +1,75 @@
+---
+title: 'Product Ratings Integration'
+description: 'Learn how to integrate product ratings and reviews with Glood.AI recommendations'
+---
+
+# Product Ratings Integration
+
+This guide explains how to integrate Judge.me product ratings and reviews with Glood.AI recommendations.
+
+## Overview
+
+Product ratings integration allows you to display review stars and ratings from Judge.me within your Glood.AI recommendation sections.
+
+## Supported Review Apps
+
+Currently, we support:
+- Judge.me
+
+## Implementation Steps
+
+### 1. Enable Product Reviews Integration
+
+First, enable the product reviews integration in your Glood.AI dashboard:
+
+1. Go to **Settings** in your Glood.AI admin
+2. Navigate to the **Integrations** tab
+3. Find **Judge.me** in the Product Reviews section
+4. Click **Enable**
+
+### 2. Add Review Tag to Template
+
+Add the `product_ratings` tag to your section template where you want the reviews to appear:
+
+```liquid
+<div class="product-card">
+  <img src="{{ product.featured_image | optimise_image: client_info, settings }}" alt="{{ product.title }}">
+  <h3>{{ product.title }}</h3>
+  <div class="price">{{ product.price | money_formatter: glood }}</div>
+  
+  <!-- Add product ratings here -->
+  <div class="reviews">
+    {% product_ratings product_id: product.id %}
+  </div>
+</div>
+```
+
+The `product_ratings` tag will automatically:
+- Generate the appropriate Judge.me widget markup
+- Handle the review data fetching
+- Display review stars and rating count
+
+### Example Output
+
+When properly configured, the tag will generate HTML like this:
+
+```html
+<div class="jdgm-widget jdgm-preview-badge" data-id="1234567890" data-auto-install="false"></div>
+```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+- **Reviews not showing**: Verify that Judge.me is properly installed and configured in your store
+- **Missing ratings**: Ensure the product has reviews in Judge.me
+- **Widget not loading**: Check that Judge.me scripts are properly loaded in your theme
+
+## Best Practices
+
+1. Always test the integration with products that have reviews
+2. Consider loading performance when adding reviews to many products
+3. Provide fallback content when reviews are not available
+4. Test the integration across different devices and screen sizes
+
+For more details on available tags and configuration options, see the [Template Tags](/for-developers/section-template/tags) documentation. 
