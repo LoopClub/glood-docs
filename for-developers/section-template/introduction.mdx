@@ -33,18 +33,6 @@ Section templates are modular components that determine how your product recomme
 A basic section template includes these core components:
 
 ```liquid
-{% schema %}
-{
-  "name": "Product Recommendations",
-  "settings": [
-    // Template settings
-  ],
-  "translations": {
-    // Translation strings
-  }
-}
-{% endschema %}
-
 <div class="glood-section" data-section-id="{{ section.id }}">
   {%- comment -%} Template markup {%- endcomment -%}
 </div>
@@ -93,12 +81,12 @@ We provide several ways to extend and customize templates:
 
 1. **Tags**: Custom Liquid tags for template functionality
    ```liquid
-   {% product_review_app_integration product_id: product.id %}
+   {% product_ratings product_id: product.id %}
    ```
 
 2. **Filters**: Data manipulation filters
    ```liquid
-   {{ product.price | money: money_format: shop.money_format }}
+   {{ product.price | format_money: glood.shop.money_format }}
    ```
 
 3. **Hooks**: JavaScript hooks for lifecycle events
@@ -107,23 +95,6 @@ We provide several ways to extend and customize templates:
      // Initialization logic
    }
    ```
-
-## Template Loading
-
-Templates are loaded through our JavaScript embed:
-
-```html
-<div id="glood-section-12345" data-section-type="recommendations">
-  <!-- Template will be loaded here -->
-</div>
-
-<script>
-  window.GloodAI.loadSection({
-    container: '#glood-section-12345',
-    template: 'horizontal_grid'
-  });
-</script>
-```
 
 ## Best Practices
 

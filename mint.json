@@ -111,6 +111,15 @@
           ]
         },
         {
+          "group": "Integrations",
+          "pages": [
+            "for-developers/integrations/introduction",
+            "for-developers/integrations/wishlist",
+            "for-developers/integrations/product-ratings",
+            "for-developers/integrations/quick-view"
+          ]
+        },
+        {
           "group": "How to guides",
           "pages": [
             "for-developers/how-to-guides/introduction",
