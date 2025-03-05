@@ -1,0 +1,927 @@
+---
+title: 'Default section.liquid'
+description: 'Default section.liquid template code reference'
+---
+
+# Default section.liquid
+
+The main template file for rendering recommendation sections.
+
+```liquid
+{%- assign translations = template.translations %}
+{%- assign translations_discount_label_text = 'discount_label_text' | t: translations, '' -%}
+{% assign root_url = glood.shopify.root_url %}
+
+{% assign section_discount_str = section.discount_config.value | section_discount: section.discount_config.type, section.discount_config.widget_message, glood.localization.language.locale, glood.shop.money_format, template.settings.intl_options %}
+{% assign image_dim = client_info.client_width | image_dimensions: template.settings.breakpoints %}
+
+{% capture quantity_selector %}
+  {% if template.settings.product_card.show_quantity_selector %}
+    <div class="_gai-qnt-cnt">
+      <button
+        class="_gai-qnt-btn"
+        data-min="{{ template.settings.product_card.min_quantity |  default: 1 }}"
+      >
+        -
+      </button>
+      <input
+        type="text"
+        class="_gai-qnt-inp"
+        id="quantity"
+        value="{{ template.settings.product_card.min_quantity |  default: 1 }}"
+        readonly
+      >
+      <button
+        class="_gai-qnt-btn"
+        data-max="{{ template.settings.product_card.max_quantity |  default: 10 }}"
+      >
+        +
+      </button>
+    </div>
+  {% endif %}
+{% endcapture %}
+
+{% capture spinner_loader %}
+  <svg width="14" height="14" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="90" stroke="white" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="0">
+      <animateTransform attributeType="XML" attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="1s" repeatCount="indefinite" />
+    </circle>
+  </svg>
+{% endcapture %}
+
+<section
+  data-show-skeleton="{{ show_skeleton }}"
+  data-gai-section-id="{{ section.id }}"
+  class="_gai-container"
+  data-layout="{{ section.layout }}"
+>
+  {% if section.layout != 'amazon_bought_together' %}
+    <div class="_gai-sec-head {% if section.layout != 'amazon_bought_together' or show_skeleton == true %} _gai-amz-skl-b-mobile {% endif %}">
+      <h3 class="_gai-sec-tit">{{ section.title }}</h3>
+      {% if section_discount_str.length > 0 %}
+        <div class="_gai-dis-cnt">
+          <span class="_gai-dis-txt">{{ section_discount_str }}</span>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if section.layout == 'horizontal_grid' %}
+    <ul class="_gai-grid">
+      {% for product in products %}
+        {% assign product_url = root_url | product_url: product.handle, glood.product.id, section.layout, product.id %}
+        {% assign first_available_variant = -1 %}
+        {% assign available_variants_count = 0 %}
+        {% for variant in product.variants %}
+          {% if variant.available_for_sale %}
+            {% if available_variants_count == 0 %}
+              {% assign first_available_variant = variant %}
+            {% endif %}
+            {% assign available_variants_count = available_variants_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+
+        {% if first_available_variant == -1 %}
+          {% assign first_available_variant = product.variants[0] %}
+        {% endif %}
+
+        {% assign multiple_variants = available_variants_count > 1 %}
+
+        {% capture swatch_component %} 
+          {% if template.settings.product_card.variant_selector_type == 'swatch' and product.variants.size > 1 %}
+            {% assign options = product.options %}
+            <div class="_gai-swtch-wrp">
+              {% for swatch in template.settings.swatches %}
+                {% assign allowed_names = swatch.option_names %}
+                {% assign found_option = false %}
+                {% for option in options %}
+                  {% assign found = false %}
+                  {% for name in allowed_names %}
+                    {% if name == option.name %}
+                      {% assign found_option = option %}
+                      {% assign found = true %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if found %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+                {% if found_option != false %}
+                  {% assign translation_key = "swatch_label_" |  append: found_option.name %}
+                  <div class="_gai-swt-ch-opt">
+                    <label>{{ translations[translation_key] |  default: found_option.name }}</label>
+                    {% assign selected_option = first_available_variant.selected_options | find: 'name', found_option.name %}
+                    <div class="_gai-swtch-opt">
+                      {% for value in found_option.option_values %}
+                        <span
+                          class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
+                          data-option-name="{{ found_option.name }}"
+                          data-option-value="{{ value }}"
+                          data-selected="{{ selected_option.value == value | to_boolean }}"
+                          data-oos="{{ available_variants_count == 0 | to_boolean }}"
+                          style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
+                        >
+                          {% if swatch.type != "color" %}{{ value }}{% endif %}
+                        </span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endcapture %}
+        {% capture variant_selector %}
+          {% assign size = available_variants_count %}
+          {% if size > 1 %}
+            <select
+              {% if available_variants_count == 0 %}
+                disabled
+              {% endif %}
+              data-integrated-atc="{{ template.settings.product_card.variant_selector_type == "integrated" | to_boolean }}"
+              class="_gai-var-slt"
+            >
+              {% for variant in product.variants %}
+                <option
+                  {% if variant.id == first_available_variant.id %}
+                    selected
+                  {% endif %}
+                  value="{{ variant.id }}"
+                  data-original-price="{{ variant.compare_at_price }}"
+                  data-selling-price="{{ variant.price }}"
+                  {% if variant.available_for_sale == false %}
+                    disabled
+                  {% endif %}
+                  data-image-url="{{ variant.image.src }}"
+                >
+                  {{ variant.title }} ({{ variant.price | format_money: glood.shop.money_format, template.settings.intl_options }})
+                </option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        {% endcapture %}
+
+        <li class="_gai-grid-item">
+          <div
+            class="_gai-prod-card swiper-slide"
+            data-gai-product-card
+            data-rk-product-id="{{ product.id }}"
+            data-selling-price="{{ first_available_variant.price }}"
+            data-original-price="{{ first_available_variant.compare_at_price }}"
+            data-oos="{{ available_variants_count == 0 }}"
+          >
+            <script class="_gai-variant-array" type="application/json">
+              {{ product.variants | json }}
+            </script>
+            <div class="_gai-lbls-grp">
+              {% if available_variants_count == 0 %}
+                <span class="_gai-pill _gai-oos">{{ translations.oos_text | default: 'Out Of Stock' }}</span>
+              {% endif %}
+              {% assign labels_cnt = 0 %}
+              {% for label in template.settings.labels %}
+                {% if labels_cnt < template.settings.max_labels_count and product.tags contains label.name %}
+                  <span class="_gai-pill _gai-{{ label.name }}">
+                    {{- translations[label.name] | default: label.name -}}
+                  </span>
+                  {% assign labels_cnt = labels_cnt | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+              {% assign product_discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format, template.settings.intl_options %}
+              {% if product_discount.length > 0 and template.settings.product_card.show_discount_pill %}
+                <span class="_gai-pill _gai-dis">{{ product_discount }}</span>
+              {% endif %}
+            </div>
+            <div class="_gai-frame">
+              <a
+                class="_gai-prod-img-wrap"
+                href="{{ product_url }}"
+                data-image-hover="{{ template.settings.product_card.image_hover_mode }}"
+              >
+                <img
+                  class="_gai-prod-img _gai-primary-prod-img"
+                  {% if multiple_variants %}
+                    {% assign image_src = first_available_variant.image.src | default: product.featured_image.src %}
+                  {% else %}
+                    {% assign image_src = product.featured_image.src %}
+                  {% endif %}
+                  src="{{ image_src | optimize_image: image_dim.width, image_dim.height }}"
+                  alt="{{ product.title }}"
+                >
+                {% if product.images[1].src %}
+                  <img
+                    class="_gai-prod-img _gai-primary-prod-img _gai-sec-img"
+                    src="{{ product.images[1].src | optimize_image: image_dim.width, image_dim.height }}"
+                    alt="{{ product.title }}"
+                  >
+                {% endif %}
+                <div class="_gai-atc-tt" data-visible="false">
+                  {{ translations.added_to_cart_text | default: 'Added to cart' }}
+                </div>
+                <div class="_gai-atc-tt _gai-atc-err-tt" data-visible="false">
+                  {{ translations.atc_error_text | default: 'Error while add to cart' }}
+                </div>
+              </a>
+              {% if template.settings.product_card.add_to_cart_mode == 'image_hover' %}
+                <div
+                  onclick="event.stopPropagation();"
+                  class="_gai-var-slt-wrp"
+                  data-atc-mode="{{ template.settings.product_card.add_to_cart_mode }}"
+                >
+                  {% if template.settings.product_card.variant_selector_type == 'integrated' %}
+                    {{ variant_selector }}
+                  {% endif %}
+
+                  <button
+                    data-variant-id="{{ first_available_variant.id }}"
+                    data-product-id="{{ product.id }}"
+                    data-quantity="1"
+                    class="_gai-atc-btn"
+                    data-gai-atc-error="false"
+                    {% if available_variants_count == 0 %}
+                      disabled
+                    {% endif %}
+                  >
+                    <span class="_gai-atc-text">
+                      {% if available_variants_count == 0 %}
+                        {{ translations.oos_text | default: 'Out of stock' }}
+                      {% else %}
+                        {{ translations.atc_text | default: 'Add to Cart' }}
+                      {% endif %}
+                    </span>
+                    <span class="_gai-atc-error-text">
+                      {{ translations.atc_error_text | default: 'Error in adding to cart' }}
+                    </span>
+                    <span class="_gai-atc-spn">
+                      {{ spinner_loader }}
+                    </span>
+                  </button>
+                </div>
+              {% endif %}
+            </div>
+            <div class="_gai-prod-dtls">
+              <div class="_gai-full-width ">
+                {% if template.settings.product_card.vendor_position == 'above' %}
+                  <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                {% endif %}
+                <a class="_gai-prod-tit" href="{{ product_url }}">
+                  {{ product.title }}
+                </a>
+                {% product_ratings product_id: product.id %}
+                <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-tit"></div>
+                {% if template.settings.product_card.vendor_position == 'below' %}
+                  <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                {% endif %}
+                <div class="_gai-prod-price-wrp" data-compare-price="{{ product.show_compare_price }}">
+                  {% if template.settings.product_card.price_compare_at_mode == 'before' %}
+                    <span
+                      class="_gai-prod-prc _gai-prod-prc--original"
+                    >
+                    </span>
+                  {% endif %}
+                  <span
+                    class="_gai-prod-prc _gai-prod-prc--compare"
+                  >
+                    <span data-product-price="{{ product.first_variant.price }}" class="money">
+                      {{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}
+                    </span>
+                  </span>
+                  {% if template.settings.product_card.price_compare_at_mode == 'after' %}
+                    <span
+                      class="_gai-prod-prc _gai-prod-prc--original"
+                    >
+                    </span>
+                  {% endif %}
+                  <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-prc" style="width:50%; margin-top:10px;"></div>
+                </div>
+                {% assign save_text = product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format, template.settings.intl_options %}
+                {% if save_text.length > 0 %}
+                  <div class="_gai-pd-save-t">{{ save_text }}</div>
+                {% endif %}
+              </div>
+              <div class="_gai-full-width _gai-vertical-spacing-10">
+                {{ swatch_component }}
+                {{ quantity_selector }}
+                {% if template.settings.product_card.variant_selector_type == 'selector' %}
+                  {{ variant_selector }}
+                {% endif %}
+                {% if template.settings.product_card.add_to_cart_mode != 'image_hover' %}
+                  <div
+                    class="_gai-var-slt-wrp"
+                    data-atc-mode="{{ template.settings.product_card.add_to_cart_mode }}"
+                  >
+                    {% if template.settings.product_card.variant_selector_type == 'integrated' %}
+                      {{ variant_selector }}
+                    {% endif %}
+                    <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-atc"></div>
+                    <button
+                      data-variant-id="{{ first_available_variant.id }}"
+                      data-product-id="{{ product.id }}"
+                      data-quantity="{{ template.settings.product_card.min_quantity |  default: 1 }}"
+                      class="_gai-atc-btn"
+                      data-gai-atc-error="false"
+                      {% if available_variants_count == 0 %}
+                        disabled
+                      {% endif %}
+                    >
+                      <span class="_gai-atc-text">
+                        {% if available_variants_count == 0 %}
+                          {{ translations.oos_text | default: 'Out of stock' }}
+                        {% else %}
+                          {{ translations.atc_text | default: 'Add to Cart' }}
+                        {% endif %}
+                      </span>
+                      <span class="_gai-atc-error-text">
+                        {{ translations.atc_error_text | default: 'Error in adding to cart' }}
+                      </span>
+                      <span class="_gai-atc-spn">
+                        {{ spinner_loader }}
+                      </span>
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elsif section.layout == 'carousel' %}
+    <div class="_gai-crz-cnt swiper">
+      <div class="swiper-wrapper gai-crz-wrap">
+        {% for product in products %}
+          {% assign first_available_variant = -1 %}
+          {% assign available_variants_count = 0 %}
+          {% for variant in product.variants %}
+            {% if variant.available_for_sale %}
+              {% if available_variants_count == 0 %}
+                {% assign first_available_variant = variant %}
+              {% endif %}
+              {% assign available_variants_count = available_variants_count | plus: 1 %}
+            {% endif %}
+          {% endfor %}
+
+          {% if first_available_variant == -1 %}
+            {% assign first_available_variant = product.variants[0] %}
+          {% endif %}
+
+          {% assign multiple_variants = available_variants_count > 1 %}
+
+          {% assign product_url = root_url | product_url: product.handle, glood.product.id, section.layout, product.id %}
+
+          {% capture swatch_component %} 
+            {% if template.settings.product_card.variant_selector_type == 'swatch' and product.variants.size > 1 %}
+              {% assign options = product.options %}
+              <div class="_gai-swtch-wrp">
+                {% for swatch in template.settings.swatches %}
+                  {% assign allowed_names = swatch.option_names %}
+                  {% assign found_option = false %}
+                  {% for option in options %}
+                    {% assign found = false %}
+                    {% for name in allowed_names %}
+                      {% if name == option.name %}
+                        {% assign found_option = option %}
+                        {% assign found = true %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                    {% if found %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if found_option != false %}
+                    {% assign translation_key = "swatch_label_" |  append: found_option.name %}
+                    <div class="_gai-swt-ch-opt">
+                      <label>{{ translations[translation_key] |  default: found_option.name }}</label>
+                      {% assign selected_option = first_available_variant.selected_options | find: 'name', found_option.name %}
+                      <div class="_gai-swtch-opt">
+                        {% for value in found_option.option_values %}
+                          <span
+                            class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
+                            data-option-name="{{ found_option.name }}"
+                            data-option-value="{{ value }}"
+                            data-selected="{{ selected_option.value == value | to_boolean }}"
+                            data-oos="{{ available_variants_count == 0 | to_boolean }}"
+                            style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
+                          >
+                            {% if swatch.type != "color" %}{{ value }}{% endif %}
+                          </span>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endcapture %}
+
+          {% capture variant_selector %}
+            {% assign size = available_variants_count %}
+            {% if size > 1 %}
+              <select
+                {% if available_variants_count == 0 %}
+                  disabled
+                {% endif %}
+                data-integrated-atc="{{ template.settings.product_card.variant_selector_type == "integrated" | to_boolean }}"
+                class="_gai-var-slt"
+              >
+                {% for variant in product.variants %}
+                  <option
+                    {% if variant.id == first_available_variant.id %}
+                      selected
+                    {% endif %}
+                    value="{{ variant.id }}"
+                    data-original-price="{{ variant.compare_at_price }}"
+                    data-selling-price="{{ variant.price }}"
+                    {% if variant.available_for_sale == false %}
+                      disabled
+                    {% endif %}
+                    data-image-url="{{ variant.image.src }}"
+                  >
+                    {{ variant.title }} ({{ variant.price | format_money: glood.shop.money_format, template.settings.intl_options }})
+                  </option>
+                {% endfor %}
+              </select>
+              {% endif %} 
+          {% endcapture %}
+
+          <div
+            class="_gai-prod-card swiper-slide"
+            data-gai-product-card
+            data-rk-product-id="{{ product.id }}"
+            data-selling-price="{{ first_available_variant.price }}"
+            data-original-price="{{ first_available_variant.compare_at_price }}"
+            data-oos="{{ available_variants_count == 0 }}"
+          >
+            <script class="_gai-variant-array" type="application/json">
+              {{ product.variants | json }}
+            </script>
+            <div class="_gai-lbls-grp">
+              {% if available_variants_count == 0 %}
+                <span class="_gai-pill _gai-oos">{{ translations.oos_text | default: 'Out Of Stock' }}</span>
+              {% endif %}
+              {% assign labels_cnt = 0 %}
+              {% for label in template.settings.labels %}
+                {% if labels_cnt < template.settings.max_labels_count and product.tags contains label.name %}
+                  <span class="_gai-pill _gai-{{ label.name }}">
+                    {{- translations[label.name] | default: label.name -}}
+                  </span>
+                  {% assign labels_cnt = labels_cnt | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+              {% assign product_discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format, template.settings.intl_options %}
+              {% if product_discount.length > 0 and template.settings.product_card.show_discount_pill %}
+                <span class="_gai-pill _gai-dis">{{ product_discount }}</span>
+              {% endif %}
+            </div>
+            <div class="_gai-frame">
+              <a
+                class="_gai-prod-img-wrap"
+                href="{{ product_url }}"
+                data-image-hover="{{ template.settings.product_card.image_hover_mode }}"
+              >
+                <img
+                  class="_gai-prod-img _gai-primary-prod-img"
+                  alt="{{ product.title }}"
+                  {% if multiple_variants %}
+                    {% assign image_src = first_available_variant.image.src | default: product.featured_image.src %}
+                  {% else %}
+                    {% assign image_src = product.featured_image.src %}
+                  {% endif %}
+                  src="{{ image_src | optimize_image: image_dim.width, image_dim.height }}"
+                >
+                {% if product.images[1].src %}
+                  <img
+                    class="_gai-prod-img _gai-primary-prod-img _gai-sec-img"
+                    src="{{ product.images[1].src | optimize_image: image_dim.width, image_dim.height }}"
+                    alt="{{ product.title }}"
+                  >
+                {% endif %}
+                <div class="_gai-atc-tt" data-visible="false">
+                  {{ translations.added_to_cart_text | default: 'Added to cart' }}
+                </div>
+                <div class="_gai-atc-tt _gai-atc-err-tt" data-visible="false">
+                  {{ translations.atc_error_text | default: 'Error while add to cart' }}
+                </div>
+              </a>
+              {% if template.settings.product_card.add_to_cart_mode == 'image_hover' %}
+                <div
+                  onclick="event.stopPropagation();"
+                  class="_gai-var-slt-wrp"
+                  data-atc-mode="{{ template.settings.product_card.add_to_cart_mode }}"
+                >
+                  {% if template.settings.product_card.variant_selector_type == 'integrated' %}
+                    {{ variant_selector }}
+                  {% endif %}
+                  <button
+                    data-variant-id="{{ first_available_variant.id }}"
+                    data-product-id="{{ product.id }}"
+                    data-quantity="1"
+                    class="_gai-atc-btn"
+                    data-gai-atc-error="false"
+                    {% if available_variants_count == 0 %}
+                      disabled
+                    {% endif %}
+                  >
+                    <span class="_gai-atc-text">
+                      {% if available_variants_count == 0 %}
+                        {{ translations.oos_text | default: 'Out of stock' }}
+                      {% else %}
+                        {{ translations.atc_text | default: 'Add to Cart' }}
+                      {% endif %}
+                    </span>
+                    <span class="_gai-atc-error-text">
+                      {{ translations.atc_error_text | default: 'Error in adding to cart' }}
+                    </span>
+                    <span class="_gai-atc-spn">
+                      {{ spinner_loader }}
+                    </span>
+                  </button>
+                </div>
+              {% endif %}
+            </div>
+            <div class="_gai-prod-dtls">
+              <div class="_gai-full-width">
+                {% if template.settings.product_card.vendor_position == 'above' %}
+                  <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                {% endif %}
+                <a class="_gai-prod-tit" href="{{ product_url }}">
+                  {{ product.title }}
+                </a>
+                {% product_ratings product_id: product.id %}
+                <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-tit"></div>
+                {% if template.settings.product_card.vendor_position == 'below' %}
+                  <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                {% endif %}
+                {% assign save_text = product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format, template.settings.intl_options %}
+                {% if save_text.length > 0 %}
+                  <div class="_gai-pd-save-t">{{ save_text }}</div>
+                {% endif %}
+                <div class="_gai-prod-price-wrp" data-compare-price="{{ product.show_compare_price }}">
+                  {% if template.settings.product_card.price_compare_at_mode == 'before' %}
+                    <span
+                      class="_gai-prod-prc _gai-prod-prc--original"
+                    >
+                    </span>
+                  {% endif %}
+                  <span
+                    class="_gai-prod-prc _gai-prod-prc--compare"
+                  >
+                    <span data-product-price="{{ product.first_variant.price }}" class="money">
+                      {{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}
+                    </span>
+                  </span>
+                  {% if template.settings.product_card.price_compare_at_mode == 'after' %}
+                    <span
+                      class="_gai-prod-prc _gai-prod-prc--original"
+                    >
+                    </span>
+                  {% endif %}
+                  <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-prc" style="width:50%; margin-top:10px;"></div>
+                </div>
+              </div>
+              <div class="_gai-full-width _gai-vertical-spacing-10">
+                {{ swatch_component }}
+                {{ quantity_selector }}
+                {% if template.settings.product_card.variant_selector_type == 'selector' %}
+                  {{ variant_selector }}
+                {% endif %}
+                {% if template.settings.product_card.add_to_cart_mode != 'image_hover' %}
+                  <div
+                    class="_gai-var-slt-wrp"
+                    data-atc-mode="{{ template.settings.product_card.add_to_cart_mode }}"
+                  >
+                    {% if template.settings.product_card.variant_selector_type == 'integrated' %}
+                      {{ variant_selector }}
+                    {% endif %}
+                    <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-atc"></div>
+                    <button
+                      data-variant-id="{{ first_available_variant.id }}"
+                      data-product-id="{{ product.id }}"
+                      data-quantity="{{ template.settings.product_card.min_quantity |  default: 1 }}"
+                      class="_gai-atc-btn"
+                      data-gai-atc-error="false"
+                      {% if available_variants_count == 0 %}
+                        disabled
+                      {% endif %}
+                    >
+                      <span class="_gai-atc-text">
+                        {% if available_variants_count == 0 %}
+                          {{ translations.oos_text | default: 'Out of stock' }}
+                        {% else %}
+                          {{ translations.atc_text | default: 'Add to Cart' }}
+                        {% endif %}
+                      </span>
+                      <span class="_gai-atc-error-text">
+                        {{ translations.atc_error_text | default: 'Error in adding to cart' }}
+                      </span>
+                      <span class="_gai-atc-spn">
+                        {{ spinner_loader }}
+                      </span>
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="_gai-crz-p-btn">
+        <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11.4448 2.28298L1.75006 11.9777L11.4448 21.6724" stroke="black" stroke-opacity="0.47" stroke-width="3.2537" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="_gai-crz-n-btn">
+        <svg width="14" height="24" viewBox="0 0 14 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.55518 2.28298L12.2499 11.9777L2.55518 21.6724" stroke="black" stroke-opacity="0.47" stroke-width="3.2537" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="_gai-crz-scrbr">
+        <div class="_gai-crz-scrbr-drag">_</div>
+      </div>
+      {% if template.settings.carousel.show_pagination %}
+        <div class="_gai-crz-pag"></div>
+      {% endif %}
+    </div>
+  {% elsif section.layout == 'amazon_bought_together' %}
+    <div class="_gai-amz-tit-wrap-mob">
+      <h3 class="_gai-sec-tit">
+        {{ section.title }}
+      </h3>
+      {% if section_discount_str.length > 0 %}
+        <div class="_gai-dis-cnt">
+          <span class="_gai-dis-txt">{{ section_discount_str }}</span>
+        </div>
+      {% endif %}
+    </div>
+    <div>
+      <div class="_gai-bndl-sec">
+        <div class="_gai-bundle-products">
+          {% for product in products %}
+            {% assign first_available_variant = -1 %}
+            {% assign available_variants_count = 0 %}
+            {% for variant in product.variants %}
+              {% if variant.available_for_sale %}
+                {% if available_variants_count == 0 %}
+                  {% assign first_available_variant = variant %}
+                {% endif %}
+                {% assign available_variants_count = available_variants_count | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+
+            {% if first_available_variant == -1 %}
+              {% assign first_available_variant = product.variants[0] %}
+            {% endif %}
+
+            {% assign multiple_variants = available_variants_count > 1 %}
+
+            {% assign product_url = root_url | product_url: product.handle, glood.product.id, section.layout, product.id %}
+            <div
+              class="_gai-prod-card"
+              data-rk-product-id="{{ product.id }}"
+              data-gai-variant-id="{{ first_available_variant.id }}"
+              data-gai-quantity="1"
+              data-gai-product-card
+              data-selling-price="{{ first_available_variant.price }}"
+              data-original-price="{{ first_available_variant.compare_at_price }}"
+              data-oos="{{ available_variants_count == 0 }}"
+              data-parent-product="{{ product.id == glood.product.id }}"
+            >
+              <script class="_gai-variant-array" type="application/json">
+                {{ product.variants | json }}
+              </script>
+              <div class="_gai-lbls-grp">
+                {% if available_variants_count == 0 %}
+                  <span class="_gai-pill _gai-oos">{{ translations.oos_text | default: 'Out Of Stock' }}</span>
+                {% endif %}
+                {% assign labels_cnt = 0 %}
+                {% for label in template.settings.labels %}
+                  {% if labels_cnt < template.settings.max_labels_count and product.tags contains label.name %}
+                    <span class="_gai-pill _gai-{{ label.name }}">
+                      {{- translations[label.name] | default: label.name -}}
+                    </span>
+                    {% assign labels_cnt = labels_cnt | plus: 1 %}
+                  {% endif %}
+                {% endfor %}
+                {% assign product_discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format, template.settings.intl_options %}
+              </div>
+              <span
+                class="_gai-amz-selector"
+                data-gai-product-id="{{ product.id }}"
+                data-selected="{{ available_variants_count > 0 }}"
+                {% if available_variants_count == 0 %}
+                  disabled
+                {% endif %}
+              >
+                <span class="_gai-amz-tick">✔️</span>
+              </span>
+              <a
+                class="_gai-prod-img-wrap"
+                href="{{ product_url }}"
+                data-image-hover="{{ template.settings.product_card.image_hover_mode }}"
+              >
+                <img
+                  class="_gai-prod-img _gai-primary-prod-img"
+                  {% if multiple_variants %}
+                    {% assign image_src = first_available_variant.image.src | default: product.featured_image.src %}
+                  {% else %}
+                    {% assign image_src = product.featured_image.src %}
+                  {% endif %}
+                  src="{{ image_src | optimize_image: image_dim.width, image_dim.height }}"
+                  alt="{{ product.title }}"
+                >
+                {% if product.images[1].src %}
+                  <img
+                    class="_gai-prod-img _gai-primary-prod-img _gai-sec-img"
+                    src="{{ product.images[1].src | optimize_image: image_dim.width, image_dim.height }}"
+                    alt="{{ product.title }}"
+                  >
+                {% endif %}
+              </a>
+              <div class="_gai-prod-dtls">
+                <div class="_gai-full-width">
+                  {% if template.settings.product_card.vendor_position == 'above' %}
+                    <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                  {% endif %}
+                  <a class="_gai-prod-tit" href="{{ product_url }}">
+                    {{ product.title }}
+                  </a>
+                  {% product_ratings product_id: product.id %}
+                  <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-tit"></div>
+                  {% if template.settings.product_card.vendor_position == 'below' %}
+                    <div class="_gai-prod-vndr">{{ product.vendor }}</div>
+                  {% endif %}
+                  {% assign save_text = product | save_amount: section.discount_config, translations.fbt_save_text, glood.shop.money_format, template.settings.intl_options %}
+                  {% if save_text.length > 0 %}
+                    <div class="_gai-pd-save-t">{{ save_text }}</div>
+                  {% endif %}
+                  <div class="_gai-prod-price-wrp" data-compare-price="{{ product.show_compare_price }}">
+                    {% if template.settings.product_card.price_compare_at_mode == 'before' %}
+                      <span
+                        class="_gai-prod-prc _gai-prod-prc--original"
+                      >
+                      </span>
+                    {% endif %}
+                    <span
+                      class="_gai-prod-prc _gai-prod-prc--compare"
+                    >
+                      <span data-product-price="{{ product.first_variant.price }}" class="money">
+                        {{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}
+                      </span>
+                    </span>
+                    {% if template.settings.product_card.price_compare_at_mode == 'after' %}
+                      <span
+                        class="_gai-prod-prc _gai-prod-prc--original"
+                      >
+                      </span>
+                    {% endif %}
+                    <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-prc" style="width:50%; margin-top:10px;"></div>
+                  </div>
+                </div>
+                <div class="_gai-var-slt-wrp" data-atc-mode="fix">
+                  {% assign options = product.options %}
+                  {% if template.settings.product_card.variant_selector_type == 'swatch'
+                    and product.variants.size > 1
+                  %}
+                    {% assign options = product.options %}
+                    <div class="_gai-swtch-wrp">
+                      {% for swatch in template.settings.swatches %}
+                        {% assign allowed_names = swatch.option_names %}
+                        {% assign found_option = false %}
+                        {% for option in options %}
+                          {% assign found = false %}
+                          {% for name in allowed_names %}
+                            {% if name == option.name %}
+                              {% assign found_option = option %}
+                              {% assign found = true %}
+                              {% break %}
+                            {% endif %}
+                          {% endfor %}
+                          {% if found %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        {% if found_option != false %}
+                          {% assign translation_key = 'swatch_label_' | append: found_option.name %}
+                          <div class="_gai-swt-ch-opt">
+                            <label>{{ translations[translation_key] | default: found_option.name }}</label>
+                            {% assign selected_option = first_available_variant.selected_options
+                              | find: 'name', found_option.name
+                            %}
+                            <div class="_gai-swtch-opt">
+                              {% for value in found_option.option_values %}
+                                <span
+                                  class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
+                                  data-option-name="{{ found_option.name }}"
+                                  data-option-value="{{ value }}"
+                                  data-selected="{{ selected_option.value == value | to_boolean }}"
+                                  data-oos="{{ available_variants_count == 0 | to_boolean }}"
+                                  style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
+                                >
+                                  {% if swatch.type != 'color' %}{{ value }}{% endif %}
+                                </span>
+                              {% endfor %}
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  {% elsif available_variants_count > 1 %}
+                    <select
+                      {% if available_variants_count == 0 %}
+                        disabled
+                      {% endif %}
+                      data-integrated-atc="false"
+                      class="_gai-var-slt"
+                      data-multiple-variants="{{ multiple_variants }}"
+                    >
+                      {% if multiple_variants %}
+                        {% for variant in product.variants %}
+                          <option
+                            {% if variant.id == first_available_variant.id %}
+                              selected
+                            {% endif %}
+                            value="{{ variant.id }}"
+                            data-original-price="{{ variant.compare_at_price }}"
+                            data-selling-price="{{ variant.price }}"
+                            {% if variant.available_for_sale == false %}
+                              disabled
+                            {% endif %}
+                            data-image-url="{{ variant.image.src }}"
+                          >
+                            {{ variant.title }} ({{ variant.price | format_money: glood.shop.money_format, template.settings.intl_options }})
+                          </option>
+                        {% endfor %}
+                      {% endif %}
+                    </select>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% if forloop.index != products.length %}
+              <span class="_gai-amz-img-separator"></span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="_gai-amz-details">
+          <div class="_gai-amz-tit-wrap">
+            <h3 class="_gai-sec-tit _gai-amz-tit">
+              {{ section.title }}
+            </h3>
+            {% if section_discount_str.length > 0 %}
+              <div class="_gai-dis-cnt" data-visible="{{ template.settings[section.layout].show_discount_label }}">
+                <span class="_gai-dis-txt">{{ section_discount_str }}</span>
+              </div>
+            {% endif %}
+          </div>
+          <div class="_gai-amz-prc">
+            <div class="_gai-amz-price">
+              {% if translations.total_price_text.length > 0 %}
+                <div>
+                  {{ translations.total_price_text }}
+                </div>
+              {% endif %}
+              {% if template.settings.amazon_bought_together.price_compare_at_mode == 'before' %}
+                <div
+                  class="_gai-bndl-cmp-prc-value _gai-prod-prc _gai-prod-prc--original"
+                  data-visible="true"
+                ></div>
+              {% endif %}
+              <div
+                class="_gai-bndl-prc-value _gai-prod-prc"
+              ></div>
+              {% if template.settings.amazon_bought_together.price_compare_at_mode == 'after' %}
+                <div
+                  class="_gai-bndl-cmp-prc-value _gai-prod-prc _gai-prod-prc--original"
+                  data-visible="true"
+                ></div>
+              {% endif %}
+            </div>
+            <span
+              class="_gai-fbt-save-t _gai-amz-disc-desk"
+              data-visible="false"
+            ></span>
+          </div>
+          <div class="_gai-amz-prc _gai-skl" style="width: 100%;">
+            <div class="_gai-skl-text _gai-shimr-eff" style="width: 75%;"></div>
+          </div>
+          <div class="_gai-skl-text _gai-shimr-eff _gai-skl" style="height: 40px;"></div>
+          <button class="_gai-atc-btn" data-gai-atc-error="false" data-gai-atc-success="false">
+            <span class="_gai-atc-text">
+              {{ translations.fbt_add_to_cart_text | default: 'Add to Cart' }}
+            </span>
+            <span class="_gai-atc-error-text">
+              {{ translations.atc_error_text | default: 'Error in adding to cart' }}
+            </span>
+            <span class="_gai-atc-success-text">
+              {{ translations.fbt_added_to_cart_text | default: 'Added to cart' }}
+            </span>
+            <span class="_gai-atc-spn">
+              {{ spinner_loader }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+``` 

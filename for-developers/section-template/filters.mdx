@@ -12,14 +12,22 @@ Formats numeric values into the store's currency format based on the money_forma
 **Parameters:**
 - `value` (Number/String): The numeric price value to be formatted
 - `money_format` (String): Override default money format
+- `intl_options` (Object, optional): Currency formatting configuration
+  ```js
+  {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }
+  ```
 
 **Returns:**  
 String - Formatted price string with currency symbol
 
 **Example:**
 ```liquid
-{{ 19.99 | format_money }}  →  "$19.99"
-{{ product.price | format_money: glood.shop.money_format  }}  →  "$29.99"
+{{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}  →  "USD 29.99"
 ```
 
 **Use Cases:**
@@ -88,13 +96,14 @@ Calculates and formats product discount information based on configuration.
 - `discount_config` (Object, required): Discount configuration settings
 - `label_text` (String, required): Template for discount label
 - `money_format` (String, required): Store's money format
+- `intl_options` (Object, optional): Currency formatting configuration
 
 **Returns:**  
 String - Formatted discount text
 
 **Example:**
 ```liquid
-{% assign discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format %}
+{% assign discount = product | product_discount: section.discount_config, translations.discount_label_text, glood.shop.money_format, template.settings.intl_options %}
 <span class="discount">{{ discount }}</span>
 ```
 
@@ -113,13 +122,14 @@ Calculates and formats savings information based on discount configuration.
 - `discount_config` (Object, required): Discount configuration settings
 - `save_text` (String, required): Template for savings text
 - `money_format` (String, required): Store's money format
+- `intl_options` (Object, optional): Currency formatting configuration
 
 **Returns:**  
 String - Formatted savings text
 
 **Example:**
 ```liquid
-{{ product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format }}
+{{ product | save_amount: section.discount_config, translations.discount_save_text, glood.shop.money_format, template.settings.intl_options }}
 ```
 
 **Use Cases:**
