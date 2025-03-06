@@ -255,15 +255,31 @@ The template object is responsible for:
 | `settings.carousel.showPagination` | boolean | Show carousel pagination | `true`, `false` | false |
 | `settings.amazon_bought_together.priceCompareAtMode` | enum | Bundle price compare mode | `"before"`, `"after"` | before |
 | `settings.amazon_bought_together.buttonBackgroundColor` | string | Bundle button background | `"#000000"` |  |
-| `translations` | object | Section-specific translations | See translations object |  |
+| `translations` | object | Section-specific translations | See translations object | |
+| `settings.intl_options` | object | Currency formatting options | Intl DOM API options | {} |
 
 **NOTE:** 
 1. `addToCartMode` behavior options:
    - `card_hover`: Add to cart button slides up from the bottom of the card when hovering over the product card
    - `image_hover`: Add to cart button appears over the product image on hover
    - `fix`: Add to cart button is always visible below the product details
-
 2. The `translations` key in this table refers to the same structure as the [translations object](/for-developers/section-template/schemas#translations-object).
+3. Example intl_options:
+   ```json
+   {
+   "style": "currency",
+   "currency": "USD",
+   "minimumFractionDigits": 2,
+   "maximumFractionDigits": 2,
+   "currencyDisplay": "symbol"
+   }
+   ```
+
+   This configuration allows for customization of:
+   - Currency display format
+   - Decimal place handling
+   - Currency symbol presentation
+   - Localized number formatting
 
 ## `clientInfo` Object
 The clientInfo object provides information about the client's device and viewport settings.
