@@ -1,0 +1,94 @@
+---
+title: 'How to access additional metafields in V3 Template'
+description: 'Learn how to access and use additional metafields in your V3 Template implementation'
+---
+
+## Overview
+
+In V3 Template, products are fetched using GraphQL. While default product data is automatically included, accessing additional metafields requires three steps:
+
+1. Adding metafields to the `getProductDetailsQuery` function
+2. Including metafields in the `transformProductData` function
+3. Accessing the metafields in your template's theme.liquid
+
+## Basic Implementation
+
+### Step 1: Modify getProductDetailsQuery
+
+Add your metafields to the GraphQL query in the `getProductDetailsQuery` function:
+
+```javascript
+getProductDetailsQuery: (recommendation, glood) => {
+  return `
+    featuredImage {
+      url
+    }
+    handle
+    id
+    title
+    # Add your metafields here
+    metafield(namespace: "custom", key: "product_info") {
+      value
+    }
+    # Rest of your existing query
+    variants(first: 250) {
+      nodes {
+        id
+        # ... other variant fields
+      }
+    }
+  `
+}
+```
+
+### Step 2: Update transformProductData
+
+Modify the `transformProductData` function to include your metafields:
+
+```javascript
+transformProductData: (product) => {
+  return {
+    featuredImage: product.featuredImage.url
+      ? {
+          src: product.featuredImage.url,
+        }
+      : null,
+    handle: product.handle,
+    id: parseInt(product.id.replace('gid://shopify/Product/', '')),
+    title: product.title,
+    // Add your metafield transformation
+    metafield_value: product.metafield ? product.metafield.value : "N/A",
+    // Rest of your existing transformations
+    variants: product.variants.nodes.map((variant) => ({
+      // ... variant transformations
+    }))
+  }
+}
+```
+
+### Step 3: Access in Theme
+
+Use the transformed metafield in your theme.liquid:
+
+```liquid
+{% raw %}
+<div class="_gai-prod-dtls">
+  <div class="_gai-full-width">
+    <a class="_gai-prod-tit" href="{{ product_url }}">
+      {{ product.title }}
+    </a>
+    {% if product.metafield and product.metafield.value %}
+      <p>Extra Info: {{ product.metafield.value }}</p>
+    {% else %}
+      <p>Information unavailable.</p>
+    {% endif %}
+  </div>
+</div>
+{% endraw %}
+```
+
+## Related Resources
+
+- [Section Template Introduction](/for-developers/section-template/introduction)
+- [Template Tags](/for-developers/section-template/tags)
+- [Template Hooks](/for-developers/section-template/hooks) 

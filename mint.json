@@ -64,7 +64,7 @@
       "group": "Documentation",
       "pages": [
         "introduction",
-        "releases"
+        "development"
       ]
     },
     {
@@ -111,19 +111,11 @@
           ]
         },
         {
-          "group": "Integrations",
-          "pages": [
-            "for-developers/integrations/introduction",
-            "for-developers/integrations/wishlist",
-            "for-developers/integrations/product-ratings",
-            "for-developers/integrations/quick-view"
-          ]
-        },
-        {
           "group": "How to guides",
           "pages": [
             "for-developers/how-to-guides/introduction",
-            "for-developers/how-to-guides/add-sections-to-mini-cart"
+            "for-developers/how-to-guides/add-sections-to-mini-cart",
+            "for-developers/how-to-guides/access-additional-metafields"
           ]
         }
       ]
