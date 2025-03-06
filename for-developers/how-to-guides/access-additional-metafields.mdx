@@ -87,6 +87,29 @@ Use the transformed metafield in your theme.liquid:
 {% endraw %}
 ```
 
+## Practical Example: Product Ratings with Judge.me
+
+### Prerequisites
+
+1. Install Judge.me app on your Shopify store:
+   - Go to Shopify App Store and install Judge.me
+   - Enable the app integration in your store settings
+
+2. Enable Judge.me in Glood:
+   - Navigate to Glood Product Recommendations
+   - Go to Settings >> Integrations >> Product Review Apps
+   - Enable the Judge.me app integration
+
+After completing the setup, the rating metafields will be available in your GraphQL queries. You can query these metafields using the reviews namespace wherever needed.
+
+To display product ratings in your template, simply use the Judge.me liquid tag:
+
+```liquid
+{% raw %}
+{% product_ratings product_id: product.id %}
+{% endraw %}
+```
+
 ## Related Resources
 
 - [Section Template Introduction](/for-developers/section-template/introduction)
