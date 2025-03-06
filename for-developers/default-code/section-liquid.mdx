@@ -14,7 +14,7 @@ The main template file for rendering recommendation sections.
 
 {% assign section_discount_str = section.discount_config.value | section_discount: section.discount_config.type, section.discount_config.widget_message, glood.localization.language.locale, glood.shop.money_format, template.settings.intl_options %}
 {% assign image_dim = client_info.client_width | image_dimensions: template.settings.breakpoints %}
-
+{% assign hide_atc = template.settings.product_card.variant_selector_type == 'swatch_with_atc' or template.settings.product_card.hide_atc %}
 {% capture quantity_selector %}
   {% if template.settings.product_card.show_quantity_selector %}
     <div class="_gai-qnt-cnt">
@@ -54,6 +54,7 @@ The main template file for rendering recommendation sections.
   data-gai-section-id="{{ section.id }}"
   class="_gai-container"
   data-layout="{{ section.layout }}"
+  data-hide-atc="{{ hide_atc }}"
 >
   {% if section.layout != 'amazon_bought_together' %}
     <div class="_gai-sec-head {% if section.layout != 'amazon_bought_together' or show_skeleton == true %} _gai-amz-skl-b-mobile {% endif %}">
@@ -87,9 +88,10 @@ The main template file for rendering recommendation sections.
         {% assign multiple_variants = available_variants_count > 1 %}
 
         {% capture swatch_component %} 
-          {% if template.settings.product_card.variant_selector_type == 'swatch' and product.variants.size > 1 %}
+          {% assign swatch_enabled = template.settings.product_card.variant_selector_type == 'swatch' or template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+          {% if swatch_enabled and product.variants.size > 1 %}
             {% assign options = product.options %}
-            <div class="_gai-swtch-wrp">
+            <div class="_gai-swtch-wrp" data-atc-enabled="{{ template.settings.product_card.variant_selector_type == 'swatch_with_atc' }}">
               {% for swatch in template.settings.swatches %}
                 {% assign allowed_names = swatch.option_names %}
                 {% assign found_option = false %}
@@ -117,7 +119,11 @@ The main template file for rendering recommendation sections.
                           class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
                           data-option-name="{{ found_option.name }}"
                           data-option-value="{{ value }}"
-                          data-selected="{{ selected_option.value == value | to_boolean }}"
+                          {% if template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+                            data-selected="false"
+                          {% else %}
+                            data-selected="{{ selected_option.value == value | to_boolean }}"
+                          {% endif %}
                           data-oos="{{ available_variants_count == 0 | to_boolean }}"
                           style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
                         >
@@ -369,9 +375,10 @@ The main template file for rendering recommendation sections.
           {% assign product_url = root_url | product_url: product.handle, glood.product.id, section.layout, product.id %}
 
           {% capture swatch_component %} 
-            {% if template.settings.product_card.variant_selector_type == 'swatch' and product.variants.size > 1 %}
+            {% assign swatch_enabled = template.settings.product_card.variant_selector_type == 'swatch' or template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+            {% if swatch_enabled and product.variants.size > 1 %}
               {% assign options = product.options %}
-              <div class="_gai-swtch-wrp">
+              <div class="_gai-swtch-wrp" data-atc-enabled="{{ template.settings.product_card.variant_selector_type == 'swatch_with_atc' }}">
                 {% for swatch in template.settings.swatches %}
                   {% assign allowed_names = swatch.option_names %}
                   {% assign found_option = false %}
@@ -399,7 +406,11 @@ The main template file for rendering recommendation sections.
                             class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
                             data-option-name="{{ found_option.name }}"
                             data-option-value="{{ value }}"
-                            data-selected="{{ selected_option.value == value | to_boolean }}"
+                            {% if template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+                              data-selected="false"
+                            {% else %}
+                              data-selected="{{ selected_option.value == value | to_boolean }}"
+                            {% endif %}
                             data-oos="{{ available_variants_count == 0 | to_boolean }}"
                             style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
                           >
@@ -779,9 +790,8 @@ The main template file for rendering recommendation sections.
                 </div>
                 <div class="_gai-var-slt-wrp" data-atc-mode="fix">
                   {% assign options = product.options %}
-                  {% if template.settings.product_card.variant_selector_type == 'swatch'
-                    and product.variants.size > 1
-                  %}
+                  {% assign swatch_enabled = template.settings.product_card.variant_selector_type == 'swatch' or template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+                  {% if swatch_enabled and product.variants.size > 1 %}
                     {% assign options = product.options %}
                     <div class="_gai-swtch-wrp">
                       {% for swatch in template.settings.swatches %}
