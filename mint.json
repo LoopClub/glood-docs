@@ -64,6 +64,7 @@
       "group": "Documentation",
       "pages": [
         "introduction",
+        "releases",
         "development"
       ]
     },
@@ -108,6 +109,15 @@
             "for-developers/section-template/filters",
             "for-developers/section-template/tags",
             "for-developers/section-template/hooks"
+          ]
+        },
+        {
+          "group": "Integrations",
+          "pages": [
+            "for-developers/integrations/introduction",
+            "for-developers/integrations/wishlist",
+            "for-developers/integrations/product-ratings",
+            "for-developers/integrations/quick-view"
           ]
         },
         {
