@@ -64,7 +64,8 @@
       "group": "Documentation",
       "pages": [
         "introduction",
-        "releases"
+        "releases",
+        "development"
       ]
     },
     {
@@ -123,7 +124,8 @@
           "group": "How to guides",
           "pages": [
             "for-developers/how-to-guides/introduction",
-            "for-developers/how-to-guides/add-sections-to-mini-cart"
+            "for-developers/how-to-guides/add-sections-to-mini-cart",
+            "for-developers/how-to-guides/access-additional-metafields"
           ]
         }
       ]
