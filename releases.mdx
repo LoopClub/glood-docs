@@ -4,6 +4,40 @@ description: 'Track the evolution of Glood.AI through our release timeline'
 ---
 
 <Steps>
+  <Step title="Layout for different breakpoints">
+    <div className="text-gray-500">Released on March 07, 2025</div>
+
+    ### Template Enhancements
+    We've introduced several powerful updates to improve template customization and section management:
+
+    #### New Variant Selector Option
+    - **Swatch with ATC** – New `swatch_with_atc` option in `productCard.variantSelectorType`
+    - **Streamlined Purchase Flow** – Automatically adds product to cart on swatch change
+    - **Clean Interface** – Hidden ATC button for better visual experience
+
+    #### Currency Formatting
+    Added flexible currency formatting using Intl DOM API:
+    ```json
+    {
+      "intlOptions": {
+        "en": {
+          "currency": "USD"
+        },
+        "hi": {
+          "currency": "GBP"
+        },
+        "currency": "INR"
+      }
+    }
+    ```
+
+    ### Section Management Updates
+    - **Automatic Placement Control** – Option to prevent section sending when automatic placement is disabled
+    - **Responsive Layouts** – Moved breakpoint-specific layout configuration from template to section extras
+    - **Enhanced Customization** – Configure different layouts for various breakpoints directly from the dashboard's section details page
+
+  </Step>
+
   <Step title="Section Status Check, Bundle Analytics & Section Design Update">
     <div className="text-gray-500">Released on March 3, 2025</div>
 
