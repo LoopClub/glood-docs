@@ -64,8 +64,7 @@
       "group": "Documentation",
       "pages": [
         "introduction",
-        "releases",
-        "development"
+        "releases"
       ]
     },
     {
