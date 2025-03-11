@@ -14,12 +14,14 @@ Formats numeric values into the store's currency format based on the money_forma
 - `money_format` (String): Override default money format
 - `intl_options` (Object, optional): Currency formatting configuration
   ```js
-  {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }
+    {
+      "en":   {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    }
   ```
 
 **Returns:**  
@@ -27,7 +29,7 @@ String - Formatted price string with currency symbol
 
 **Example:**
 ```liquid
-{{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}  →  "USD 29.99"
+{{ product.price | format_money: glood.shop.money_format, template.settings.intl_options }}
 ```
 
 **Use Cases:**
