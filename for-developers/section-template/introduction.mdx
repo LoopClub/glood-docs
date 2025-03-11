@@ -123,11 +123,11 @@ We provide several ways to extend and customize templates:
    - Provide alt text for images
 
 
-## Libraries and Dependencies
+## Libraries
 
-The section template system is built on a carefully selected stack of modern libraries, each serving a specific purpose in creating efficient and maintainable templates.
+The section template system uses the following core libraries that you'll interact with when customizing templates:
 
-### Core Dependencies
+### Core Libraries
 
 <Tabs>
   <Tab title="Preact">
@@ -135,13 +135,13 @@ The section template system is built on a carefully selected stack of modern lib
     "preact": "^10.22.1"
     ```
     
-    Our primary UI library, chosen for its lightweight footprint (3kB) and React compatibility.
+    Our UI library for building interactive components.
 
-    **Key Benefits**:
-    - Full React API compatibility
-    - Significantly smaller bundle size
-    - Optimized performance
-    - Virtual DOM diffing
+    **Key Features**:
+    - React-compatible API
+    - Lightweight (3kB)
+    - Virtual DOM
+    - Component-based architecture
 
     [View Preact Documentation →](https://preactjs.com/)
   </Tab>
@@ -151,87 +151,32 @@ The section template system is built on a carefully selected stack of modern lib
     "swiper": "^11.1.15"
     ```
     
-    Powers all carousel and slider functionality in templates.
+    Powers carousel functionality in templates.
 
-    **Common Use Cases**:
+    **Common Uses**:
     - Product carousels
     - Image galleries
     - Touch-enabled sliders
-    - Responsive breakpoints
+    - Responsive layouts
 
     [View Swiper Documentation →](https://swiperjs.com/)
   </Tab>
-</Tabs>
 
-### Template Engine
-
-<Tabs>
   <Tab title="Liquid.js">
     ```json
     "liquidjs": "^10.19.0"
     ```
     
-    Handles all template rendering, ensuring Shopify compatibility.
+    Template engine for rendering Shopify-compatible templates.
 
     **Features**:
-    - Shopify Liquid syntax support
+    - Shopify Liquid syntax
     - Custom tags and filters
-    - Async rendering
     - Theme compatibility
 
     [View Liquid.js Documentation →](https://liquidjs.com/)
   </Tab>
 </Tabs>
-
-### Utility Libraries
-
-These libraries provide essential functionality for template operations:
-
-| Library | Version | Purpose | Documentation |
-|---------|---------|---------|---------------|
-| `lodash.merge` | ^4.6.2 | Deep object merging for configurations | [Documentation →](https://lodash.com/docs/#merge) |
-| `humps` | ^2.0.1 | Case transformation for API integration | [Documentation →](https://github.com/domchristie/humps) |
-
-### Development Tools
-
-<Tabs>
-  <Tab title="Vite">
-    ```json
-    {
-      "vite": "^5.3.3",
-      "@preact/preset-vite": "^2.9.0"
-    }
-    ```
-    
-    Our build and development toolchain.
-
-    **Developer Benefits**:
-    - Instant hot module replacement
-    - Lightning-fast builds
-    - Built-in TypeScript support
-    - Optimized production builds
-    - Preact integration
-
-    [View Vite Documentation →](https://vitejs.dev/)    
-    [View Preact Preset Documentation →](https://github.com/preactjs/preset-vite)
-  </Tab>
-</Tabs>
-
-### Package Scripts
-
-Available development commands:
-
-```json
-{
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "watch": "vite build --watch",
-    "mock": "nodemon ./template/serve.js"
-  }
-}
-```
 
 ## Next Steps
 
