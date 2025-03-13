@@ -1,0 +1,127 @@
+---
+title: 'Default settings.json'
+description: 'Default settings.json configuration reference'
+---
+
+# Default settings.json
+
+The main configuration file for recommendation sections.
+
+```json
+{
+  "breakpoints": {
+    "small": {
+      "gutter": 10,
+      "cardsPerView": 2,
+      "widgetTitleAlignment": "left",
+      "productTitleAlignment": "left",
+      "comparePriceVisible": false,
+      "imageWidth": 300,
+      "imageHeight": 300,
+      "justifyWidgetSubtitle": "left"
+    },
+    "medium": {
+      "gutter": 20,
+      "cardsPerView": 3,
+      "widgetTitleAlignment": "center",
+      "productTitleAlign": "center",
+      "comparePriceVisible": true,
+      "imageWidth": 300,
+      "imageHeight": 300,
+      "justifyWidgetSubtitle": "center"
+    },
+    "large": {
+      "gutter": 20,
+      "cardsPerView": 4,
+      "widgetTitleAlignment": "center",
+      "productTitleAlign": "center",
+      "comparePriceVisible": true,
+      "imageWidth": 300,
+      "imageHeight": 300,
+      "justifyWidgetSubtitle": "center"
+    }
+  },
+  "labels": [
+    {
+      "name": "new",
+      "textColor": "#ffffff",
+      "backgroundColor": "#333333"
+    },
+    {
+      "name": "trending",
+      "textColor": "#ffffff",
+      "backgroundColor": "#444444"
+    },
+    {
+      "name": "bestseller",
+      "textColor": "#ffffff",
+      "backgroundColor": "#222222"
+    }
+  ],
+  "maxLabelsCount": 2,
+  "outOfStock": {
+    "textColor": "#ffffff",
+    "backgroundColor": "#000"
+  },
+  "carousel": {
+    "library": "swiper",
+    "showPagination": true
+  },
+  "productCard": {
+    "color": "#222",
+    "priceColor": "#222",
+    "titleColor": "#222",
+    "discountColor": "#000",
+    "vendorPosition": "hidden",
+    "addToCartMode": "card_hover",
+    "backgroundColor": "transparent",
+    "discountVisible": true,
+    "imageHoverMode": "secondary",
+    "imageObjectFit": "contain",
+    "addToCartColor": "#fff",
+    "imageAspectRatio": "1:1",
+    "showDiscountPill": true,
+    "discountBackground": "transparent",
+    "priceColorCompare": "#aaa",
+    "discountLabelColor": "#ffffff",
+    "priceColorOriginal": "#5C5C5C",
+    "priceCompareAtMode": "before",
+    "addToCartBackground": "#000",
+    "showQuantitySelector": false,
+    "discountLabelVisible": true,
+    "discountLabelPosition": "center",
+    "discountLabelBackground": "#ff0000",
+    "redirectAfterAddToCart": true,
+    "variantSelectorType": "integrated",
+    "comparePriceVisibilityMobile": "before",
+    "disabledAddToCartBackground": "#00000070",
+    "disableAddToCartButton": false
+  },
+  "colorMapping": {},
+  "horizontalGrid": {},
+  "amazonBoughtTogether": {
+    "priceCompareAtMode": "before",
+    "buttonBackgroundColor": "#000"
+  },
+  "swatches": [
+    {
+      "type": "color",
+      "key": "color",
+      "optionNames": [
+        "Color",
+        "Colour",
+        "color",
+        "colour"
+      ]
+    },
+    {
+      "type": "size",
+      "key": "size",
+      "optionNames": [
+        "Size",
+        "sizes"
+      ]
+    }
+  ]
+}
+``` 
