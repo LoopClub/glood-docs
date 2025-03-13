@@ -256,7 +256,7 @@ The template object is responsible for:
 | `settings.amazon_bought_together.priceCompareAtMode` | enum | Bundle price compare mode | `"before"`, `"after"` | before |
 | `settings.amazon_bought_together.buttonBackgroundColor` | string | Bundle button background | `"#000000"` |  |
 | `translations` | object | Section-specific translations | See translations object | |
-| `settings.intl_options` | object | Currency formatting options | Intl DOM API options | {} |
+| `settings.intl_options` | object | Locale based currency formatting options | Intl DOM API options | {} |
 
 **NOTE:** 
 1. `addToCartMode` behavior options:
@@ -267,11 +267,13 @@ The template object is responsible for:
 3. Example intl_options:
    ```json
    {
-   "style": "currency",
-   "currency": "USD",
-   "minimumFractionDigits": 2,
-   "maximumFractionDigits": 2,
-   "currencyDisplay": "symbol"
+      "en": {
+         "style": "currency",
+         "currency": "USD",
+         "minimumFractionDigits": 2,
+         "maximumFractionDigits": 2,
+         "currencyDisplay": "symbol"
+      }
    }
    ```
 
