@@ -125,6 +125,15 @@
             "for-developers/how-to-guides/introduction",
             "for-developers/how-to-guides/add-sections-to-mini-cart"
           ]
+        },
+        {
+          "group": "Default Code",
+          "pages": [
+            "for-developers/default-code/translations",
+            "for-developers/default-code/settings-json",
+            "for-developers/default-code/section-liquid",
+            "for-developers/default-code/css-liquid"
+          ]
         }
       ]
     },
