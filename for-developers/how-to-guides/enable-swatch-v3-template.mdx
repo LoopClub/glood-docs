@@ -1,0 +1,55 @@
+---
+title: 'Enable Swatch in v3 Template'
+description: 'Learn how to enable and configure swatch functionality in your v3 template'
+---
+Swatches provide a visual way for customers to select product variants, especially useful for color and material options. This guide will show you how to enable and configure swatches in your v3 template.
+
+## Basic Configuration
+
+To enable swatches in your template, you need to modify the `variantSelectorType` setting to "swatch". This will automatically convert your variant selectors to swatch format.
+
+```json
+{
+  "variantSelectorType": "swatch"
+}
+```
+
+## Color Mapping
+
+When using swatches for colors, Glood first checks if the product color is a valid CSS color. If it's not valid, it looks up the color in the color mapping configuration.
+
+### Why Use Color Mapping?
+
+Color mapping is essential when your store uses custom color names that aren't valid CSS colors. For example, if your store uses color names like "limestone green" or "cityscape", you'll need to map these to valid CSS colors.
+
+### Example Configuration
+
+Here's how to set up color mapping:
+
+```json
+{
+  "colorMapping": {
+   "limestoneGreen": "#348221"
+  }
+}
+```
+
+### How Color Mapping Works
+
+1. When a product variant has a color option, Glood first checks if it's a valid CSS color
+2. If the color is valid (e.g., "red", "#FF0000", "rgb(255, 0, 0)"), it's used directly
+3. If the color is not valid (e.g., "limestone green"), Glood looks up the corresponding value in the colorMapping
+4. The mapped color is then used for the swatch display
+
+## Troubleshooting
+
+If swatches aren't displaying correctly:
+
+1. Verify that `variantSelectorType` is set to "swatch"
+2. Check that all custom color names are properly mapped
+3. Ensure the color values in the mapping are valid CSS colors
+4. Clear your store's cache to ensure changes take effect
+
+## Support
+
+If you need help with enabling or customizing swatches in your v3 template, contact our support team at support@glood.ai 
