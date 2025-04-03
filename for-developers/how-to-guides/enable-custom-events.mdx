@@ -5,12 +5,13 @@ description: 'Learn how to enable and configure custom events to control section
 
 ## Overview
 
-Custom events allow you to control when sections become visible on your store. This guide will show you how to set up and use custom events to trigger section rendering.
+Custom events provide a flexible way to control section behavior in your store. This guide demonstrates how to set up and use custom events to manage section rendering based on various scenarios and conditions.
 
-Custom events provide a way to control section visibility by:
-- Initially hiding all sections
-- Showing sections only after specific events are triggered
-- Managing section rendering based on user interactions or other conditions
+Custom events enable you to:
+- Control section visibility based on specific triggers
+- Manage section rendering timing
+- Implement custom loading behaviors
+- Create dynamic user experiences
 
 ## Configuration
 
@@ -18,7 +19,7 @@ Custom events provide a way to control section visibility by:
 
 In your app-embed settings, locate the "Init Event Name" section inside the app-embed and in the input field write your desired event name (e.g., initialize_app).
 
-This setting tells Glood AI which event to listen for before initializing the widgets.
+This setting tells Glood AI which event to listen for before initializing the sections.
 
 ## Usage
 
@@ -30,7 +31,7 @@ This setting tells Glood AI which event to listen for before initializing the wi
 
 ### Example
 
-Let's say you set the init event name to "initialize_app":
+Here's a simple example of how to trigger the custom event. When this event is dispatched, Glood AI will initialize all sections that are configured to listen for this event:
 
 ```javascript
 // This will trigger the sections to become visible
