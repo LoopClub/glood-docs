@@ -1,0 +1,57 @@
+---
+title: 'Enable Labels on Store'
+description: 'Learn how to configure and enable product labels in your store'
+---
+
+## Configuration
+
+### Settings Configuration
+Configure your labels in `settings.json`. Each label has a name, text color, and background color:
+
+```json
+"labels": [
+  {
+    "name": "new",
+    "textColor": "#ffffff",
+    "backgroundColor": "#333333"
+  },
+  {
+    "name": "trending",
+    "textColor": "#ffffff",
+    "backgroundColor": "#444444"
+  },
+  {
+    "name": "bestseller",
+    "textColor": "#ffffff",
+    "backgroundColor": "#222222"
+  }
+],
+"maxLabelsCount": 2
+```
+
+### Template Implementation
+Add this code to your `theme.liquid` to display labels on products. The code checks for matching tags and applies the configured styling:
+
+```liquid
+{% assign labels_cnt = 0 %}
+{% for label in template.settings.labels %}
+  {% if labels_cnt < template.settings.max_labels_count and product.tags contains label.name %}
+    <span class="_gai-pill _gai-{{ label.name }}">
+      {{- translations[label.name] | default: label.name -}}
+    </span>
+    {% assign labels_cnt = labels_cnt | plus: 1 %}
+  {% endif %}
+{% endfor %}
+```
+
+## How It Works
+
+1. Add tags to your products (e.g., "new", "trending", "bestseller") - These tags should match the label names in your settings
+2. Labels will automatically appear on products with matching tags - The system checks product tags against configured label names
+3. Each product shows max 2 labels (configurable via `maxLabelsCount`) - Adjust this number in settings to show more or fewer labels
+4. Labels use the colors defined in settings - Each label type has its own text and background colors
+5. Supports translations through the `translations` object - Use translations to display labels in different languages
+
+## Support
+
+Need help with labels? Contact support@glood.ai 
