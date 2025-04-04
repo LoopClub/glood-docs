@@ -1,11 +1,8 @@
 ---
-title: 'Default section.liquid'
-description: 'Default section.liquid template code reference'
+title: 'Default Template liquid'
+description: 'Default Template liquid code reference'
 ---
-
-# Default section.liquid
-
-The main template file for rendering recommendation sections.
+The main Template file for rendering recommendation sections.
 
 ```liquid
 {%- assign translations = template.translations %}
@@ -13,7 +10,6 @@ The main template file for rendering recommendation sections.
 {% assign root_url = glood.shopify.root_url %}
 
 {% assign section_discount_str = section.discount_config.value | section_discount: section.discount_config.type, section.discount_config.widget_message, glood.localization.language.locale, glood.shop.money_format %}
-{% assign image_dim = client_info.client_width | image_dimensions: template.settings.breakpoints %}
 
 {% capture quantity_selector %}
   {% if template.settings.product_card.show_quantity_selector %}
@@ -98,9 +94,10 @@ The main template file for rendering recommendation sections.
           {% assign multiple_variants = available_variants_count > 1 %}
 
           {% capture swatch_component %} 
-            {% if template.settings.product_card.variant_selector_type == 'swatch' and product.variants.size > 1 %}
+            {%  assign should_enable_swatch = template.settings.product_card.variant_selector_type == 'swatch' or template.settings.product_card.variant_selector_type == 'swatch_with_atc' %}
+            {% if should_enable_swatch and product.variants.size > 1 %}
               {% assign options = product.options %}
-              <div class="_gai-swtch-wrp">
+              <div class="_gai-swtch-wrp" data-atc-enabled="{{ template.settings.product_card.variant_selector_type == "swatch_with_atc" }}">
                 {% for swatch in template.settings.swatches %}
                   {% assign allowed_names = swatch.option_names %}
                   {% assign found_option = false %}
@@ -124,15 +121,20 @@ The main template file for rendering recommendation sections.
                       {% assign selected_option = first_available_variant.selected_options | find: 'name', found_option.name %}
                       <div class="_gai-swtch-opt">
                         {% for value in found_option.option_values %}
+                          {% assign swatch_img_url = found_option.swatches[forloop.index0].image.preview_image.url %}
+                          {% assign swatch_color = found_option.swatches[forloop.index0].color %}
+                          {% if swatch_color == blank %}
+                            {% assign swatch_color = value | color_value: template.settings.color_mapping  %}
+                          {% endif %}
                           <span
-                            class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
+                            class="_gai-swtch-btn {% if swatch.type == "image" %} _gai-swtch-img _gai-swtch-clr-btn {% elsif swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
                             data-option-name="{{ found_option.name }}"
                             data-option-value="{{ value }}"
                             data-selected="{{ selected_option.value == value | to_boolean }}"
                             data-oos="{{ available_variants_count == 0 | to_boolean }}"
-                            style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
+                            style="{% if swatch.type == "color" %} background: {{ swatch_color }} {% elsif swatch.type == "image" %} background-image: url('{{ swatch_img_url }}'); background-size: cover; background-position: center; {% endif %}"
                           >
-                            {% if swatch.type != "color" %}{{ value }}{% endif %}
+                            {% if swatch.type == "size" %}{{ value }}{% endif %}
                           </span>
                         {% endfor %}
                       </div>
@@ -213,14 +215,18 @@ The main template file for rendering recommendation sections.
                     {% else %}
                       {% assign image_src = product.featured_image.src %}
                     {% endif %}
-                    src="{{ image_src | optimize_image: image_dim.width, image_dim.height }}"
+                    srcset="{{ image_src | imgsrcset: template.settings.breakpoints }}"
+                    src="{{ image_src }}"
                     alt="{{ product.title }}"
+                    sizes="{{ template.settings.breakpoints | imgsize }}"
                   >
                   {% if product.images[1].src %}
                     <img
                       class="_gai-prod-img _gai-primary-prod-img _gai-sec-img"
-                      src="{{ product.images[1].src | optimize_image: image_dim.width, image_dim.height }}"
+                      srcset="{{ product.images[1].src | imgsrcset: template.settings.breakpoints }}"
+                      src="{{ product.images[1].src }}"
                       alt="{{ product.title }}"
+                      sizes="{{ template.settings.breakpoints | imgsize }}"
                     >
                   {% endif %}
                   <div class="_gai-atc-tt" data-visible="false">
@@ -280,17 +286,19 @@ The main template file for rendering recommendation sections.
                     <div class="_gai-prod-vndr">{{ product.vendor }}</div>
                   {% endif %}
                   <div class="_gai-prod-price-wrp" data-compare-price="{{ product.show_compare_price }}">
-                    {% if template.settings.product_card.price_compare_at_mode != 'none' %}
+                    {% assign compare_at_price = first_available_variant.compare_at_price | times: 1.0 %}
+                    {% if template.settings.product_card.price_compare_at_mode != 'none' and compare_at_price > 0 %}
                       <span
                         class="_gai-prod-prc _gai-prod-prc--compare-at"
                       >
+                        {{ first_available_variant.compare_at_price | format_money: glood.shop.money_format }}
                       </span>
                     {% endif %}
                     <span
                       class="_gai-prod-prc _gai-prod-prc--selling"
                     >
                       <span data-product-price="{{ product.first_variant.price }}" class="money">
-                        {{ product.price | format_money: glood.shop.money_format }}
+                        {{ first_available_variant.price | format_money: glood.shop.money_format }}
                       </span>
                     </span>
                     <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-prc" style="width:50%; margin-top:10px;"></div>
@@ -450,14 +458,17 @@ The main template file for rendering recommendation sections.
                   {% else %}
                     {% assign image_src = product.featured_image.src %}
                   {% endif %}
-                  src="{{ image_src | optimize_image: image_dim.width, image_dim.height }}"
-                  alt="{{ product.title }}"
+                    srcset="{{ image_src | imgsrcset: template.settings.breakpoints }}"
+                    src="{{ image_src }}"
+                    sizes="{{ template.settings.breakpoints | imgsize }}"
                 >
                 {% if product.images[1].src %}
                   <img
                     class="_gai-prod-img _gai-primary-prod-img _gai-sec-img"
-                    src="{{ product.images[1].src | optimize_image: image_dim.width, image_dim.height }}"
+                    srcset="{{ product.images[1].src | imgsrcset: template.settings.breakpoints  }}"
+                    src="{{ product.images[1].src }}"
                     alt="{{ product.title }}"
+                    sizes="{{ template.settings.breakpoints | imgsize }}"
                   >
                 {% endif %}
               </a>
@@ -478,17 +489,19 @@ The main template file for rendering recommendation sections.
                     <div class="_gai-pd-save-t">{{ save_text }}</div>
                   {% endif %}
                   <div class="_gai-prod-price-wrp" data-compare-price="{{ product.show_compare_price }}">
-                    {% if template.settings.product_card.price_compare_at_mode != 'none' %}
+                    {% assign compare_at_price = first_available_variant.compare_at_price | times: 1.0 %}
+                    {% if template.settings.product_card.price_compare_at_mode != 'none' and compare_at_price > 0 %}
                       <span
                         class="_gai-prod-prc _gai-prod-prc--compare-at"
                       >
+                          {{ first_available_variant.compare_at_price | format_money: glood.shop.money_format }}
                       </span>
                     {% endif %}
                     <span
                       class="_gai-prod-prc _gai-prod-prc--selling"
                     >
                       <span data-product-price="{{ product.first_variant.price }}" class="money">
-                        {{ product.price | format_money: glood.shop.money_format }}
+                        {{ first_available_variant.price | format_money: glood.shop.money_format }}
                       </span>
                     </span>
                     <div class="_gai-skl _gai-skl-text _gai-shimr-eff _gai-skl-prc" style="width:50%; margin-top:10px;"></div>
@@ -496,11 +509,10 @@ The main template file for rendering recommendation sections.
                 </div>
                 <div class="_gai-var-slt-wrp" data-atc-mode="fix">
                   {% assign options = product.options %}
-                  {% if template.settings.product_card.variant_selector_type == 'swatch'
-                    and product.variants.size > 1
-                  %}
+                  {% assign should_enable_swatch = template.settings.product_card.variant_selector_type == 'swatch' or template.settings.product_card.variant_selector_type == 'swatch_with_atc' %} 
+                  {% if should_enable_swatch and product.variants.size > 1 %}
                     {% assign options = product.options %}
-                    <div class="_gai-swtch-wrp">
+                    <div class="_gai-swtch-wrp" data-atc-enabled="{{ template.settings.product_card.variant_selector_type == "swatch_with_atc" }}">
                       {% for swatch in template.settings.swatches %}
                         {% assign allowed_names = swatch.option_names %}
                         {% assign found_option = false %}
@@ -520,21 +532,24 @@ The main template file for rendering recommendation sections.
                         {% if found_option != false %}
                           {% assign translation_key = 'swatch_label_' | append: found_option.name %}
                           <div class="_gai-swt-ch-opt">
-                            <label>{{ translations[translation_key] | default: found_option.name }}</label>
-                            {% assign selected_option = first_available_variant.selected_options
-                              | find: 'name', found_option.name
-                            %}
+                            <label>{{ translations[translation_key] |  default: found_option.name }}</label>
+                            {% assign selected_option = first_available_variant.selected_options | find: 'name', found_option.name %}
                             <div class="_gai-swtch-opt">
                               {% for value in found_option.option_values %}
+                                {% assign swatch_img_url = found_option.swatches[forloop.index0].image.preview_image.url %}
+                                {% assign swatch_color = found_option.swatches[forloop.index0].color %}
+                                {% if swatch_color == blank %}
+                                  {% assign swatch_color = value | color_value: template.settings.color_mapping  %}
+                                {% endif %}
                                 <span
-                                  class="_gai-swtch-btn {% if swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
+                                  class="_gai-swtch-btn {% if swatch.type == "image" %} _gai-swtch-img _gai-swtch-clr-btn {% elsif swatch.type != "color" %} _gai-swtch-sz-btn {% else %} _gai-swtch-clr-btn {% endif %}"
                                   data-option-name="{{ found_option.name }}"
                                   data-option-value="{{ value }}"
                                   data-selected="{{ selected_option.value == value | to_boolean }}"
                                   data-oos="{{ available_variants_count == 0 | to_boolean }}"
-                                  style="{% if swatch.type == "color" %} background: {{ value | color_value: template.settings.color_mapping }} {% endif %}"
+                                  style="{% if swatch.type == "color" %} background: {{ swatch_color }} {% elsif swatch.type == "image" %} background-image: url('{{ swatch_img_url }}'); background-size: cover; background-position: center; {% endif %}"
                                 >
-                                  {% if swatch.type != 'color' %}{{ value }}{% endif %}
+                                  {% if swatch.type == "size" %}{{ value }}{% endif %}
                                 </span>
                               {% endfor %}
                             </div>
@@ -597,21 +612,15 @@ The main template file for rendering recommendation sections.
                   {{ translations.total_price_text }}
                 </div>
               {% endif %}
-              {% if template.settings.amazon_bought_together.price_compare_at_mode == 'before' %}
+              <div class="_gai-amz-prc-wrp" data-price-order="{{ template.settings.amazon_bought_together.price_compare_at_mode }}">
                 <div
                   class="_gai-bndl-cmp-prc-value _gai-prod-prc _gai-prod-prc--compare-at"
                   data-visible="true"
                 ></div>
-              {% endif %}
-              <div
-                class="_gai-bndl-prc-value _gai-prod-prc"
-              ></div>
-              {% if template.settings.amazon_bought_together.price_compare_at_mode == 'after' %}
                 <div
-                  class="_gai-bndl-cmp-prc-value _gai-prod-prc _gai-prod-prc--compare-at"
-                  data-visible="true"
+                  class="_gai-bndl-prc-value _gai-prod-prc"
                 ></div>
-              {% endif %}
+              </div>
             </div>
             <span
               class="_gai-fbt-save-t _gai-amz-disc-desk"

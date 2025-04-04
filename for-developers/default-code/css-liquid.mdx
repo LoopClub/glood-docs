@@ -1,11 +1,8 @@
 ---
-title: 'Default css.liquid'
-description: 'Default css.liquid template code reference'
+title: 'Default Template CSS'
+description: 'Default Template CSS code reference'
 ---
-
-# Default css.liquid
-
-The main CSS template file for styling recommendation sections.
+The main Template CSS file for styling recommendation sections.
 
 ```liquid
 {% comment %} for grid layout {% endcomment %}
@@ -21,7 +18,7 @@ The main CSS template file for styling recommendation sections.
 
 [data-gai-section-id="{{ section_id }}"] ._gai-prod-prc { 
   color: {{ product_card_settings.price_color }};
-  font-family: {{ settings.breakpoints.small.price_font_size }}; 
+  font-size: {{ settings.breakpoints.small.price_font_size }}px; 
 }
 
 [data-gai-section-id="{{ section_id }}"] ._gai-sec-tit { 
@@ -162,28 +159,10 @@ The main CSS template file for styling recommendation sections.
   color: {{ product_card_settings.discount_label_color }};
 }
 
-{% if product_card_settings.disable_add_to_cart_button %}
-  [data-gai-section-id="{{ section_id }}"] {
-    ._gai-atc-btn {
-      display: none !important;
-    }
-    ._gai-skl-atc {
-      display: none !important;
-    }
-  }
-{% endif %}
-
 @media (min-width: {{ settings.breakpoints.medium.screen_size |  default: 768 }}px) { 
   [data-gai-section-id="{{ section_id }}"] ._gai-grid { 
     grid-template-columns: repeat({{- settings.breakpoints.medium.cards_per_view |  default: 3 -}},1fr); 
     gap: {{ settings.breakpoints.medium.gutter |  default: 20 }}px; 
-  }
-
-
-  [data-gai-section-id="{{ section_id }}"] ._gai-prod-card {
-  {% if section.layout == 'amazon_bought_together' %}
-    max-width: 300px;
-  {% endif %}
   }
 
   {% assign n = products.length %}
@@ -200,13 +179,8 @@ The main CSS template file for styling recommendation sections.
     {% endif %}
   }
 
-  [data-gai-section-id="{{ section_id }}"] ._gai-grid { 
-    grid-template-columns: repeat({{- settings.breakpoints.medium.cards_per_view -}},1fr); 
-    gap: {{ settings.breakpoints.medium.gutter |  default: 10 }}px; 
-  }
-
   [data-gai-section-id="{{ section_id }}"] ._gai-prod-prc { 
-    font-family: {{ settings.breakpoints.medium.price_font_size }}; 
+    font-size: {{ settings.breakpoints.medium.price_font_size }}px; 
   }
 
   [data-gai-section-id="{{ section_id }}"] ._gai-sec-tit { 
@@ -245,13 +219,8 @@ The main CSS template file for styling recommendation sections.
     gap: {{ settings.breakpoints.large.gutter |  default: 20 }}px; 
   }
 
-  [data-gai-section-id="{{ section_id }}"] ._gai-grid { 
-    grid-template-columns: repeat({{- settings.breakpoints.large.cards_per_view -}},1fr); 
-    gap: {{ settings.breakpoints.large.gutter |  default: 10 }}px; 
-  }
-
   [data-gai-section-id="{{ section_id }}"] ._gai-prod-prc { 
-    font-family: {{ settings.breakpoints.large.price_font_size }}; 
+    font-size: {{ settings.breakpoints.large.price_font_size }}px; 
   }
 
   [data-gai-section-id="{{ section_id }}"] ._gai-sec-tit { 
@@ -302,4 +271,17 @@ The main CSS template file for styling recommendation sections.
     justify-content: start;
   {% endif %}
 }
+
+{% assign should_disable = product_card_settings.variant_selector_type == "swatch_with_atc" or product_card_settings.disable_add_to_cart_button %}
+
+{% if section.layout != 'amazon_bought_together' and should_disable %}
+  [data-gai-section-id="{{ section_id }}"] {
+    ._gai-atc-btn {
+      display: none !important;
+    }
+    ._gai-skl-atc {
+      display: none !important;
+    }
+  }
+{% endif %}
 ``` 

@@ -137,7 +137,8 @@
             "for-developers/default-code/translations",
             "for-developers/default-code/settings-json",
             "for-developers/default-code/section-liquid",
-            "for-developers/default-code/css-liquid"
+            "for-developers/default-code/css-liquid",
+            "for-developers/default-code/section-js"
           ]
         }
       ]
