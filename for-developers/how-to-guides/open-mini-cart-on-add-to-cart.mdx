@@ -9,8 +9,8 @@ This guide will show you how to configure your sections to automatically open th
 
 ## Implementation
 
-### Template Code Hook
-Add the following code to your template's JavaScript hooks. This code will be triggered whenever a product is added to cart:
+### Add Functions to Hook
+Add these functions to your template's JavaScript hooks:
 
 ```javascript
 loadAjaxCart: (bodyElem) => {
@@ -33,6 +33,14 @@ loadAjaxCart: (bodyElem) => {
     }, 1000);
   }
 ```
+
+### Theme-Specific Implementation
+For this to work, you need to find and use the correct selectors and events from your theme's code:
+
+1. Find the mini cart drawer element in your theme (usually has a class like `drawer-cart` or `mini-cart`)
+2. Identify the correct class that indicates the cart is visible (often `drawer--visible` or similar)
+3. Locate the theme's cart initialization and reload events
+4. Find the correct drawer event dispatch method
 
 ## How It Works
 
