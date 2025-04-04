@@ -1,0 +1,97 @@
+---
+title: 'Enable Custom Events in V3 Template'
+description: 'Learn how to enable and configure custom events to control section visibility on your store'
+---
+
+## Overview
+
+Custom events provide a flexible way to control section behavior in your store. This guide demonstrates how to set up and use custom events to manage section rendering based on various scenarios and conditions.
+
+Custom events enable you to:
+- Control section visibility based on specific triggers
+- Manage section rendering timing
+- Implement custom loading behaviors
+- Create dynamic user experiences
+
+## Configuration
+
+### Set Up Init Event Name
+
+In your app-embed settings, locate the "Init Event Name" section inside the app-embed and in the input field write your desired event name (e.g., initialize_app).
+
+![Init Event Name Setting in App Embed](/images/init-event-name-setting.png)
+
+This setting tells Glood AI which event to listen for before initializing the sections.
+
+## Usage
+
+### Basic Implementation
+
+1. Set your desired event name in the "Init Event Name" field
+2. By default, no sections will be visible on the store
+3. Trigger the event to show sections
+
+### Example
+
+Here's a simple example of how to trigger the custom event. When this event is dispatched, Glood AI will initialize all sections that are configured to listen for this event:
+
+```javascript
+// This will trigger the sections to become visible
+dispatchEvent(new CustomEvent("initialize_app"));
+```
+
+### Common Use Cases
+
+1. **Scroll-Based Loading**
+   ```javascript
+   window.addEventListener('scroll', () => {
+     if (isScrolledToBottom()) {
+       dispatchEvent(new CustomEvent("initialize_app"));
+     }
+   });
+   ```
+
+2. **User Interaction Based**
+   ```javascript
+   document.querySelector('.load-recommendations').addEventListener('click', () => {
+     dispatchEvent(new CustomEvent("initialize_app"));
+   });
+   ```
+
+3. **Time-Based Loading**
+   ```javascript
+   setTimeout(() => {
+     dispatchEvent(new CustomEvent("initialize_app"));
+   }, 3000); // Show sections after 3 seconds
+   ```
+
+## Best Practices
+
+1. **Event Naming**
+   - Use clear, descriptive event names
+   - Follow a consistent naming convention
+   - Avoid generic names that might conflict with other events
+
+2. **Performance**
+   - Trigger events at appropriate times to optimize page load
+   - Consider user experience when deciding when to show sections
+   - Avoid triggering events too early or too late
+
+3. **Error Handling**
+   - Always check if the event was successfully dispatched
+   - Provide fallback behavior if needed
+   - Log events for debugging purposes
+
+## Troubleshooting
+
+If sections aren't appearing as expected:
+
+1. Verify that V3 sections are enabled
+2. Check that the event name matches exactly in both settings and code
+3. Ensure the event is being dispatched correctly
+4. Check browser console for any errors
+5. Verify that the sections are properly configured
+
+## Support
+
+If you need help with setting up or customizing events, contact our support team at support@glood.ai 
