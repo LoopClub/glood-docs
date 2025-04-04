@@ -1,0 +1,57 @@
+---
+title: 'Open Mini Cart on Add to Cart'
+description: 'Learn how to enable the mini cart to automatically open when clicking the add to cart button'
+---
+
+## Overview
+
+This guide will show you how to configure your sections to automatically open the mini cart when a customer clicks the add to cart button. This feature provides immediate feedback to customers and makes it easier for them to review their cart contents.
+
+## Implementation
+
+### Add Functions to Hook
+Add these functions to your template's JavaScript hooks:
+
+```javascript
+loadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('#drawer-cart');
+    return ajaxCart.classList.contains("drawer--visible");
+  },
+
+  // Unload recommendations when mini cart closes
+  unloadAjaxCart: (bodyElem) => {
+    const ajaxCart = bodyElem.querySelector('#drawer-cart');
+    return !ajaxCart.classList.contains("drawer--visible");
+  },
+  onCartOperationComplete: (args, utils, gloodUtils) => {
+    setTimeout(() => {
+      document.dispatchEvent(new CustomEvent('theme:cart:init', { bubbles: true }));
+      document.dispatchEvent(new CustomEvent('theme:cart:reload', {
+        bubbles: true
+      }));
+       window.dispatchDrawerEvent('drawer-cart', 'open');
+    }, 1000);
+  }
+```
+
+### Theme-Specific Implementation
+For this to work, you need to find and use the correct selectors and events from your theme's code:
+
+1. Find the mini cart drawer element in your theme (usually has a class like `drawer-cart` or `mini-cart`)
+2. Identify the correct class that indicates the cart is visible (often `drawer--visible` or similar)
+3. Locate the theme's cart initialization and reload events
+4. Find the correct drawer event dispatch method
+
+## How It Works
+
+1. The `loadAjaxCart` function checks if the mini cart is currently visible by looking for the `drawer--visible` class
+2. The `unloadAjaxCart` function handles the opposite case, checking when the mini cart should be closed
+3. When a cart operation completes, `onCartOperationComplete` is triggered:
+   - It dispatches `theme:cart:init` event to initialize the cart
+   - It dispatches `theme:cart:reload` event to refresh cart contents
+   - It opens the mini cart drawer using `dispatchDrawerEvent`
+   - A 1-second delay ensures smooth operation
+
+## Support
+
+If you need help with implementing this feature, contact our support team at support@glood.ai 
