@@ -1,0 +1,93 @@
+---
+title: 'Set Default Variant in Variant Selector'
+description: 'Learn how to configure the default variant selection in your product templates'
+---
+
+## Setting Default Product Variant
+
+You can control which variant is selected by default in your product templates by implementing the `getDefaultProductVariant` hook in your JavaScript template object.
+
+### Implementation
+
+Add the following hook to your JavaScript template object:
+
+```javascript
+const templateObject = {
+  // ... existing template configuration
+  getDefaultProductVariant: (product) => {
+    // Returns the first variant's ID by default
+    return product.variants[0].id;
+  }
+  // ... rest of template configuration
+};
+```
+
+### Customization Examples
+
+You can customize the logic inside `getDefaultProductVariant` to select different variants based on your requirements. Here are some practical examples:
+
+```javascript
+// Example 1: Return first in-stock variant ID
+getDefaultProductVariant: (product) => {
+  const inStockVariant = product.variants.find(
+    variant => variant.availableForSale && variant.quantityAvailable > 0
+  );
+  return (inStockVariant || product.variants[0]).id;
+}
+
+// Example 2: Return lowest priced variant ID
+getDefaultProductVariant: (product) => {
+  const lowestPriceVariant = product.variants.reduce((lowest, variant) => {
+    return (!lowest || variant.price < lowest.price) ? variant : lowest;
+  }, null);
+  return lowestPriceVariant.id;
+}
+
+// Example 3: Return variant ID with specific option
+getDefaultProductVariant: (product) => {
+  const variantWithSize = product.variants.find(variant => 
+    variant.selectedOptions.some(option => 
+      option.name === 'Size' && option.value === 'Medium'
+    )
+  );
+  return (variantWithSize || product.variants[0]).id;
+}
+```
+
+### Parameters
+
+The hook receives the following parameter:
+
+- `product` (Object): The full product object containing all product data including variants
+
+### Return Value
+
+The hook should return the variant ID (number) of the variant that you want to be selected by default when the product page loads.
+
+<Note>
+  If the `getDefaultProductVariant` function returns `null`, it will have no effect on the variant selection in the store. The default variant selection behavior will remain unchanged.
+</Note>
+
+## Complete Example
+
+Here's a complete example showing how to implement the default variant selection:
+
+```javascript
+const productTemplate = {
+  name: 'Product Template',
+  getDefaultProductVariant: (product) => {
+    // Find first available variant with quantity in stock
+    const defaultVariant = product.variants.find(variant => 
+      variant.availableForSale && 
+      variant.quantityAvailable > 0 &&
+      !variant.currentlyNotInStock
+    );
+    
+    // Return the variant ID, falling back to first variant's ID if no available variants found
+    return (defaultVariant || product.variants[0]).id;
+  },
+  // ... other template configuration
+};
+```
+
+This implementation will return the ID of the first available variant with stock as the default variant when customers view your product pages. 
