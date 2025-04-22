@@ -1,0 +1,139 @@
+---
+title: How to create Similar Products Section
+---
+
+The Similar Products section helps enhance product discovery by showcasing items that share characteristics with the product currently being viewed. This AI-powered recommendation section analyzes product attributes, categories, and user behavior patterns to suggest relevant alternatives, helping customers find exactly what they're looking for while increasing engagement and potential sales.
+
+## Implementation Steps
+
+#### 1. Open the "Glood Product Recommendations" app in your Glood.AI admin
+<img src="/images/checkout-upsell-01.png" alt="Open Glood Product Recommendations app" />
+
+#### 2. Click on the "AI Recommendations" section from the app menu
+→ This will open the AI Recommendations Setup screen (as shown in the image), where you can create and manage personalized product recommendation sections powered by AI. These sections can be added to any page of your store to display relevant product suggestions based on user behavior.
+<img src="/images/section-setup-01.png" alt="AI Recommendations Setup screen" />
+
+#### 3. Click on the "Create Section" button on the top-right corner of the AI Recommendations Setup screen
+- This will open the Create AI Recommendation Section screen (as shown in the image), where you can configure and customize your recommendation section.
+- Select the page where you want to display the section, choose the experience type, and give the section a title (e.g., Similar Products).
+- Under **Select Recommendation Type**, choose **Similar Products** to display products that share characteristics with the currently viewed item.
+<img src="/images/section-setup-02.png" alt="Create AI Recommendation Section screen" />
+
+#### 4. Click on the Save button to create the section
+- After selecting Similar Products as your recommendation type and filling out the necessary details, click on the Save button at the top right corner.
+- This will create the AI-powered recommendation section and the section detail page will open.
+- **Note:** The section is disabled by default—it won't be visible to visitors until you enable it.
+<img src="/images/section-setup-06.png" alt="Save Recommendation Section screen" />
+
+#### 5. Configure Your Section (Section Detail Page)
+→ Once you've saved your section, you'll be redirected to the Section Detail Page, which looks like this:
+
+<img src="/images/section-setup-07.png" alt="Section Detail Page" />
+→ Firstly Enable your section on your store by clicking on the enable section button.
+
+Here, you can fine-tune how your Similar Products recommendations behave on your store. Here's a quick rundown of the editable options:
+
+**→ Basic Info**
+
+- **Section Name:** You can rename your section here if needed.
+- **Set Translations:** Customize how the title appears in different languages.
+
+**→ Recommendation Configuration**
+
+This section allows you to customize how product recommendations are generated for your Similar Products section. You can combine multiple methods to ensure accurate and dynamic suggestions.
+
+**1. 1-1 Manual Recommendation**
+- Click Configure to manually select similar products for individual items.
+- Highest priority – these recommendations override others if set.
+
+**2. Advanced Configuration (Expandable)**
+→ Includes extra options:
+
+- **Automatic Recommendation:** Enable this to let the system automatically suggest products based on your store's real-time sales data using proprietary algorithms.
+- **Enable Random Recommendations:** Use fallback random suggestions when no similar products are found.
+- **Show Sold Out Items as Recommendations:** If enabled, even out-of-stock items may appear in the suggestion list.
+
+**→ Excluded Products and Tags**
+- Excluded Products and Tags are used to remove specific products or tags from being recommended only within this particular section.
+- For detailed instructions on excluding products and tags, see our [How to Exclude Products and Tags guide](/for-developers/how-to-guides/how-to-exclude-products-and-tags).
+- **Note:** Excluded items won't appear in recommendations for this section only. To exclude items globally, configure them in your store settings.
+
+**→ Disabled Products and Tags**
+- Disabled Products and Tags are used to prevent the recommendation section from appearing on specific product pages or pages with specific tags.
+- For detailed instructions on disabling products and tags, see our [How to Disable Products and Tags guide](/for-developers/how-to-guides/how-to-disable-products-and-tags).
+- **Note:** When a product or tag is disabled, the entire recommendation section will not be shown on those product pages.
+
+**→ Whitelist Products and Tags**
+- Whitelist Products and Tags are used to restrict recommendations to only show specific products or products with specific tags within this section.
+- **Note:** When using whitelists, only the specified products or products with the specified tags will be eligible to appear as recommendations in this section.
+
+**→ Location & Position**
+Choose where on your product page this recommendation section will appear.
+
+**→ Advanced Configuration Settings**
+
+Configure additional settings to fine-tune how recommendations are generated and displayed:
+
+**1. Product Ranking Criteria**
+- Choose how recommended products should be ranked and ordered
+- Options include:
+  - Similarity score (default)
+  - Price (high to low)
+  - Price (low to high)
+  - New products first
+  - Bestsellers first
+  - Random
+
+**2. Product Filter Criteria**
+- Filter which products can be recommended based on specific attributes
+- Options include:
+  - Collection: Only recommend products from the same collection
+  - Products: Only recommend specific products
+  - Product Type: Only recommend products with matching product type
+  - Vendor: Only recommend products from the same vendor
+  - No criteria (default): No filtering applied
+
+**3. Fallback Criteria**
+- Define what happens when primary recommendations aren't available
+- Options include:
+  - Random (default)
+  - Best sellers
+  - No criteria
+  - Trending
+
+**4. Price Range Limits**
+- **Minimum Price:** Set a floor price for recommended products
+- **Maximum Price:** Set a ceiling price for recommended products
+- Helps ensure recommendations stay within desired price ranges
+
+**→ Status Section**
+- Control whether this recommendation section is active or inactive on your store
+- Simple toggle switch to enable/disable the section
+
+**→ Visual Editor**
+- Access powerful visual editing tools to customize the section's appearance
+- Click the visual editor button to open an intuitive interface for:
+  - Modifying layout and design
+  - Adjusting colors and styling
+  - Customizing text and content
+  - Previewing changes in real-time
+
+**→ Segmentation**
+- Control which visitors see this recommendation section
+- Available targeting options:
+  - All visitors (default)
+  - First-time visitors
+  - Returning visitors 
+  - Buyers
+  - Is customer
+  - Is not customer
+- Helps create personalized experiences for different user segments
+
+#### 6. Preview and Test Your Section
+→ After configuring your section, you can preview and test it to ensure it works as expected:
+
+<img src="/images/section-setup-08.png" alt="section preview" />
+
+## Support
+
+If you need help with setting up or customizing Similar Products sections, contact our support team at support@glood.ai
