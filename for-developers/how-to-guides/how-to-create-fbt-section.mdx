@@ -96,8 +96,12 @@ The Discount Configuration allows you to set up automatic discounts for products
 
 
 **→ Location & Position**
-
-Choose where on your product page this recommendation section will appear.
+- Choose where to show the section on your Shopify store:
+  - Enter a div ID, class selector or xPath to specify the location (default: #shopify-section-product-template)
+  - Set the position number to control where the section appears within that location (1 = first section)
+  - Use breakpoint-based configuration for granular control across different screen sizes
+  - For direct theme code placement, copy the provided widget code snippet
+  - Optional: Enable "Require app block placement" to control section display in storefront
 
 **→ Advanced Configuration Settings**
 
@@ -139,12 +143,21 @@ Configure additional settings to fine-tune how recommendations are generated and
 - Simple toggle switch to enable/disable the section from the section details page
 
 **→ Visual Editor**
-- Access powerful visual editing tools to customize the section's appearance
-- Click the visual editor button to open an intuitive interface for:
-  - Modifying layout and design
-  - Adjusting colors and styling
-  - Customizing text and content
-  - Previewing changes in real-time
+- Choose between Visual Editor or Visual Editor V3 for customizing your section's appearance
+- Select a template:
+  - For stores with v2 templates, only Visual Editor will be visible
+  - For stores with v3 templates, both Visual Editor and Visual Editor V3 will be visible
+- Make changes to your section's appearance by clicking the Visual Editor or Visual Editor V3 button based on your assigned template
+- Customize layout, styling and content through the editor interface
+- Configure template-specific settings by clicking the "Click Here" link
+- Select a default layout style:
+  - Carousel
+  - Horizontal Grid 
+  - Amazon like Bought Together
+- Choose layout style for different screen sizes:
+  - Small screens (mobile): Select Carousel, Horizontal Grid, or Amazon like Bought Together layout
+  - Medium screens (tablet): Select Carousel, Horizontal Grid, or Amazon like Bought Together layout  
+  - Large screens (desktop): Select Carousel, Horizontal Grid, or Amazon like Bought Together layout
 
 **→ Segmentation**
 - Control which visitors see this recommendation section

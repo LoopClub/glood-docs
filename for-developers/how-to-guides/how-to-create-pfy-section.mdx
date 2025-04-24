@@ -1,8 +1,8 @@
 ---
-title: How to create Recently Viewed section
+title: How to create Personalized for You section
 ---
 
-The Recently Viewed section helps enhance the shopping experience by displaying products that customers have previously viewed during their browsing session. This feature makes it easy for customers to return to items they were interested in, potentially increasing engagement and conversion rates.
+The Personalized for You section provides tailored product recommendations based on each visitor's browsing history, preferences, and behavior. This AI-powered feature helps create a personalized shopping experience that can significantly increase engagement and conversion rates.
 
 ## Implementation Steps
 
@@ -16,20 +16,20 @@ The Recently Viewed section helps enhance the shopping experience by displaying 
 #### 3. Click on the "Create Section" button on the top-right corner
 - This will open the Create AI Recommendation Section screen
 - Select the page where you want to display the section
-- Choose the experience type and give the section a title (e.g., Recently Viewed)
-- Under **Select Recommendation Type**, choose **Recently Viewed** to display products that visitors have previously viewed
+- Choose the experience type and give the section a title (e.g., Personalized for You)
+- Under **Select Recommendation Type**, choose **Personalized for You** to display AI-tailored recommendations
 <img src="/images/section-setup-02.png" alt="Create AI Recommendation Section screen" />
 
 #### 4. Click on the Save button to create the section
-- After selecting Recently Viewed as your recommendation type and filling out the necessary details, click on the Save button
+- After selecting Personalized for You as your recommendation type and filling out the necessary details, click on the Save button
 - This will create the section and open the section detail page
 - **Note:** The section is disabled by default until you enable it
-<img src="/images/section-setup-11.png" alt="Save Recommendation Section screen" />
+<img src="/images/section-setup-17.png" alt="Save Recommendation Section screen" />
 
 #### 5. Configure Your Section (Section Detail Page)
 → Once saved, you'll be redirected to the Section Detail Page:
 
-<img src="/images/section-setup-12.png" alt="Section Detail Page" />
+<img src="/images/section-setup-18.png" alt="Section Detail Page" />
 → Enable your section by clicking on the enable section button.
 
 Here are the key configuration options available:
@@ -37,6 +37,29 @@ Here are the key configuration options available:
 **→ Basic Info**
 - **Section Name:** Customize the name of your section
 - **Set Translations:** Add translations for different languages
+
+
+**→ Excluded Products and Tags**
+- Excluded Products and Tags are used to remove specific products or tags from being recommended only within this particular section.
+
+
+- For detailed instructions on excluding products and tags, see our [How to Exclude Products and Tags guide](/for-developers/how-to-guides/how-to-exclude-products-and-tags).
+
+- **Note:** Excluded items won't appear in recommendations for this section only. To exclude items globally, configure them in your store settings.
+
+**→ Disabled Products and Tags**
+- Disabled Products and Tags are used to prevent the recommendation section from appearing on specific product pages or pages with specific tags.
+
+
+- For detailed instructions on disabling products and tags, see our [How to Disable Products and Tags guide](/for-developers/how-to-guides/how-to-disable-products-and-tags).
+
+- **Note:** When a product or tag is disabled, the entire recommendation section will not be shown on those product pages. To disable items globally, configure them in your store settings.
+
+**→ Whitelist Products and Tags**
+- Whitelist Products and Tags are used to restrict recommendations to only show specific products or products with specific tags within this section.
+
+- **Note:** When using whitelists, only the specified products or products with the specified tags will be eligible to appear as recommendations in this section. This provides precise control over what can be recommended.
+
 
 **→ Location & Position**
 - Choose where to show the section on your Shopify store:
@@ -58,16 +81,15 @@ Configure additional settings:
   - Price (high to low)
   - Price (low to high)
   - New products first
-  - Personalized for viewer
   - Random
 
 **2. Fallback Criteria**
-- Define what happens when primary recommendations aren't available
+- Define what happens when personalized recommendations aren't available
 - Options include:
   - Random (default)
   - Best sellers
-  - No criteria
   - Trending
+  - No criteria
 
 **3. Price Range Limits**
 - **Minimum Price:** Set a floor price for displayed products
@@ -98,7 +120,7 @@ Configure additional settings:
 - Available targeting options:
   - All visitors (default)
   - First-time visitors
-  - Returning visitors 
+  - Returning visitors
   - Buyers
   - Is customer
   - Is not customer
@@ -107,8 +129,8 @@ Configure additional settings:
 #### 6. Preview and Test Your Section
 → After configuration, preview and test the section to ensure it works as expected:
 
-<img src="/images/section-setup-13.png" alt="section preview" />
+<img src="/images/section-setup-19.png" alt="section preview" />
 
 ## Support
 
-If you need help with setting up or customizing Recently Viewed sections, contact our support team at support@glood.ai
+If you need help with setting up or customizing Personalized for You sections, contact our support team at support@glood.ai
