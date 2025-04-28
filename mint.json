@@ -130,9 +130,11 @@
             "for-developers/how-to-guides/open-mini-cart-on-add-to-cart",
             "for-developers/how-to-guides/enable-labels",
             "for-developers/how-to-guides/how-to-set-default-variant",
+            "for-developers/how-to-guides/how-to-exclude-products-and-tags",
+            "for-developers/how-to-guides/how-to-disable-products-and-tags",
+            "for-developers/how-to-guides/how-to-create-bundle",
             "for-developers/how-to-guides/add-checkout-upsell",
-            "for-developers/how-to-guides/add-checkout-upsell-post-checkout"
-            
+            "for-developers/how-to-guides/add-checkout-upsell-post-checkout"            
           ]
         },
         {
@@ -140,9 +142,6 @@
           "pages": [
             "for-developers/how-to-guides/how-to-create-fbt-section",
             "for-developers/how-to-guides/how-to-create-similar-products-section",
-            "for-developers/how-to-guides/how-to-exclude-products-and-tags",
-            "for-developers/how-to-guides/how-to-disable-products-and-tags",
-            "for-developers/how-to-guides/how-to-create-bundle",
             "for-developers/how-to-guides/how-to-create-cross-sell-section",
             "for-developers/how-to-guides/how-to-create-recently-viewed-section",
             "for-developers/how-to-guides/how-to-create-trending-section",
