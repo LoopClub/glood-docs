@@ -131,7 +131,13 @@
             "for-developers/how-to-guides/enable-labels",
             "for-developers/how-to-guides/how-to-set-default-variant",
             "for-developers/how-to-guides/add-checkout-upsell",
-            "for-developers/how-to-guides/add-checkout-upsell-post-checkout",
+            "for-developers/how-to-guides/add-checkout-upsell-post-checkout"
+            
+          ]
+        },
+        {
+          "group": "Creating new sections",
+          "pages": [
             "for-developers/how-to-guides/how-to-create-fbt-section",
             "for-developers/how-to-guides/how-to-create-similar-products-section",
             "for-developers/how-to-guides/how-to-exclude-products-and-tags",
