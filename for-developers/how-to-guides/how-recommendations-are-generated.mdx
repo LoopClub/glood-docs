@@ -1,0 +1,115 @@
+---
+title: How Recommendations are generated
+---
+
+# Product Recommendation Generation Process
+
+The recommendation generation process involves several steps that work together to provide accurate and relevant product suggestions. Here's a detailed breakdown of how it works:
+
+## Initial Product Processing
+
+1. When a product is opened in the store, a background job is triggered
+2. This job synchronizes the product data with Elasticsearch
+3. The product information is converted into searchable vector format
+4. Large Language Models (LLMs) process this vectorized data
+5. The processed vectors are stored in Elasticsearch
+
+## Async Recommendation Generation
+
+After the initial processing:
+
+1. The LLM asynchronously generates recommendations for the product
+2. These recommendations are stored as vectors with product relationships
+3. The system saves this generated recommendation data for future use
+
+## Recommendation Retrieval
+
+When recommendations are needed:
+
+1. Product A sends a request for recommendations
+2. The system retrieves the pre-generated vector recommendations
+3. The data is processed through RAG (Retrieval Augmented Generation)
+4. RAG matches the vectors against the product database
+5. The system returns the most relevant recommended products
+
+This process ensures:
+- Fast recommendation delivery through pre-computation
+- Accurate product matching using vector similarity
+- Efficient data retrieval and processing
+- Scalable recommendation generation
+
+## Recommendation Algorithm Details
+
+Our recommendation system uses a sophisticated hybrid approach combining multiple algorithms and data sources:
+
+### Core Algorithm Components
+
+1. **Collaborative Filtering**
+   - Analyzes user behavior patterns and purchase history
+   - Identifies similar users and their preferences
+   - Generates recommendations based on user similarities
+
+2. **Content-Based Filtering**
+   - Processes product attributes and descriptions
+   - Creates detailed product feature vectors
+   - Matches products based on attribute similarity
+
+3. **Vector Embeddings**
+   - Converts product descriptions into high-dimensional vectors
+   - Uses advanced LLM models for semantic understanding
+   - Enables nuanced product similarity matching
+
+### Data Sources Used
+
+The system incorporates multiple data points:
+
+- Product metadata (categories, tags, attributes)
+- User interaction data (views, purchases, cart additions)
+- Historical sales patterns
+- Seasonal trends
+- Price points and availability
+- Product descriptions and features
+
+### Customization Options
+
+Merchants can customize recommendations through:
+
+1. **Business Rules Engine**
+   - Set product inclusion/exclusion rules
+   - Define category-specific recommendations
+   - Implement price range restrictions
+   - Configure seasonal adjustments
+
+2. **Weighting Parameters**
+   - Adjust importance of different data sources
+   - Modify similarity thresholds
+   - Fine-tune recommendation freshness
+   - Balance between popularity and relevance
+
+3. **Display Controls**
+   - Set number of recommendations
+   - Configure recommendation placement
+   - Customize recommendation layout
+   - Define mobile-specific displays
+
+### Performance Optimization
+
+The system maintains high performance through:
+
+- Pre-computed recommendations for popular products
+- Real-time recommendation updates for new products
+- Caching strategies for quick retrieval
+- Load balancing for high-traffic periods
+
+### Quality Assurance
+
+Recommendation quality is maintained via:
+
+- Regular algorithm performance reviews
+- A/B testing of recommendation strategies
+- Continuous monitoring of user engagement
+- Automated relevance checking
+
+## Support
+
+If you need help with implementing or customizing the recommendation system, contact our support team at support@glood.ai
