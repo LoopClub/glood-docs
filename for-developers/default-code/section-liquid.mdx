@@ -11,6 +11,8 @@ The main Template file for rendering recommendation sections.
 
 {% assign section_discount_str = section.discount_config.value | section_discount: section.discount_config.type, section.discount_config.widget_message, glood.localization.language.locale, glood.shop.money_format %}
 
+{% assign section_title = section.translations[glood.localization.language.locale].title | default: section.title %}
+
 {% capture quantity_selector %}
   {% if template.settings.product_card.show_quantity_selector %}
     <div class="_gai-qnt-cnt">
@@ -53,7 +55,7 @@ The main Template file for rendering recommendation sections.
 >
   {% if section.layout != 'amazon_bought_together' %}
     <div class="_gai-sec-head {% if section.layout != 'amazon_bought_together' or show_skeleton == true %} _gai-amz-skl-b-mobile {% endif %}">
-      <h3 class="_gai-sec-tit">{{ section.title }}</h3>
+      <h3 class="_gai-sec-tit">{{ section_title }}</h3>
       {% if section_discount_str.length > 0 %}
         <div class="_gai-dis-cnt">
           <span class="_gai-dis-txt">{{ section_discount_str }}</span>
