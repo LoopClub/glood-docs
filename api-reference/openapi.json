@@ -35,7 +35,7 @@
           }
         ],
         "requestBody": {
-          "description": "Request body", 
+          "description": "Request body",
           "content": {
             "application/json": {
               "schema": {
@@ -84,7 +84,7 @@
           }
         ],
         "requestBody": {
-          "description": "Request body", 
+          "description": "Request body",
           "content": {
             "application/json": {
               "schema": {
@@ -122,11 +122,7 @@
     "schemas": {
       "AutomaticRecommendationsRequest": {
         "type": "object",
-        "required": [
-          "product_ids",
-          "recommendation_type",
-          "view"
-        ],
+        "required": ["product_ids", "recommendation_type", "view"],
         "properties": {
           "product_ids": {
             "type": "array",
@@ -141,9 +137,58 @@
             "enum": ["similar_products"]
           },
           "view": {
-            "type": "string", 
+            "type": "string",
             "description": "Context where recommendations will be displayed",
             "enum": ["product_details", "product_ids"]
+          },
+          "filter": {
+            "type": "object",
+            "properties": {
+              "variants": {
+                "type": "object",
+                "properties": {
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name", "value"],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Option name"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Option value"
+                        }
+                      }
+                    }
+                  },
+                  "is_in_stock": {
+                    "type": "boolean",
+                    "description": "Filter by in-stock status"
+                  },
+                  "sku": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Filter by SKU"
+                  },
+                  "available_for_sale": {
+                    "type": "boolean",
+                    "description": "Filter by availability for sale"
+                  }
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Filter by product tags"
+              }
+            }
           },
           "pagination": {
             "type": "object",
@@ -228,7 +273,7 @@
                       "description": "Height of the image in pixels"
                     },
                     "width": {
-                      "type": "integer", 
+                      "type": "integer",
                       "description": "Width of the image in pixels"
                     },
                     "altText": {
@@ -273,7 +318,7 @@
                   }
                 },
                 "variants": {
-                  "type": "array", 
+                  "type": "array",
                   "items": {
                     "type": "object",
                     "properties": {
@@ -307,7 +352,7 @@
                               "description": "Name of the option"
                             },
                             "value": {
-                              "type": "string", 
+                              "type": "string",
                               "description": "Selected value for this option"
                             }
                           }
@@ -360,7 +405,7 @@
                       "description": "Maximum allowed value"
                     },
                     "value": {
-                      "type": "number", 
+                      "type": "number",
                       "description": "Actual value provided"
                     },
                     "label": {
@@ -376,14 +421,11 @@
               }
             }
           }
-
         }
       },
       "HeadlessQueryRecommendationsRequest": {
         "type": "object",
-        "required": [
-          "queries"
-        ],
+        "required": ["queries"],
         "properties": {
           "client_id": {
             "type": "string",
@@ -391,7 +433,7 @@
           },
           "user_id": {
             "type": "string",
-            "description": "User identifier" 
+            "description": "User identifier"
           },
           "customer_id": {
             "type": "string",
@@ -401,12 +443,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "id",
-                "recommendation_type", 
-                "product_ids",
-                "view"
-              ],
+              "required": ["id", "recommendation_type", "product_ids", "view"],
               "properties": {
                 "id": {
                   "type": "string",
@@ -447,11 +484,7 @@
       },
       "HeadlessQueryRecommendationsProductDetailsResponse": {
         "type": "object",
-        "required": [
-          "status",
-          "serve_id",
-          "data"
-        ],
+        "required": ["status", "serve_id", "data"],
         "properties": {
           "status": {
             "type": "string",
@@ -501,7 +534,7 @@
                       "description": "Maximum allowed value"
                     },
                     "value": {
-                      "type": "number", 
+                      "type": "number",
                       "description": "Actual value provided"
                     },
                     "label": {
@@ -517,14 +550,10 @@
               }
             }
           }
-
         }
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+        "required": ["error", "message"],
         "type": "object",
         "properties": {
           "error": {
